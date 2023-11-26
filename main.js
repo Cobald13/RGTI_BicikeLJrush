@@ -2,6 +2,8 @@ import { ResizeSystem } from './common/engine/systems/ResizeSystem.js';
 import { UpdateSystem } from './common/engine/systems/UpdateSystem.js';
 
 import { OrbitController } from './common/engine/controllers/OrbitController.js';
+import { FirstPersonController } from './common/engine/controllers/FirstPersonController.js';
+import { TurntableController } from './common/engine/controllers/TurntableController.js';
 import { RotateAnimator } from './common/engine/animators/RotateAnimator.js';
 
 import { GLTFLoader } from './common/engine/loaders/GLTFLoader.js';
@@ -30,7 +32,7 @@ await gltfLoader.load("common/models/scenaImport/pls.gltf");
 const scene = gltfLoader.loadScene(gltfLoader.defaultScene);
 const camera = scene.find(node => node.getComponentOfType(Camera));
 
-camera.addComponent(new OrbitController(camera, document.body, {
+camera.addComponent(new TurntableController(camera, document.body, {
     distance: 8,
 }));
 
@@ -49,13 +51,42 @@ light.addComponent(new Light({
 //}))
 scene.addChild(light);
 
-const model = scene.find(node => node.getComponentOfType(Model));
-//model.addComponent(new RotateAnimator(model, {
-//    startRotation: [0, 0, 0, 1],
-//    endRotation: [0.7071, 0, 0.7071, 0],
-//    duration: 5,
-//    loop: true,
+//we get all the models from the scene
+const models = scene.filter(node => node.getComponentOfType(Model));
+//we add linear animator to each model
+//to each model we add a different loop delay - first we loop the first model, then the second, then the third...
+models.forEach((model, index) => {
+    model.addComponent(new LinearAnimator(model, {
+        startPosition: [model.getComponentOfType(Transform).translation[0], model.getComponentOfType(Transform).translation[1], model.getComponentOfType(Transform).translation[2]],
+        endPosition: [model.getComponentOfType(Transform).translation[0], model.getComponentOfType(Transform).translation[1], model.getComponentOfType(Transform).translation[2] + 90],
+        duration: 10,
+        startTime: index * 10,
+        loop: true,
+    }));
+});
+
+// Move the first model behind the camera and keep it there
+//models[2].addComponent(new LinearAnimator(models[2], {
+//    startPosition: [models[2].getComponentOfType(Transform).translation[0], models[2].getComponentOfType(Transform).translation[1], models[2].getComponentOfType(Transform).translation[2]],
+//    endPosition: [models[2].getComponentOfType(Transform).translation[0], models[2].getComponentOfType(Transform).translation[1], models[2].getComponentOfType(Transform).translation[2] + 120],
+//    startTime: 0,
+//    duration: 10,
+//    loop: false,
 //}));
+//
+//// Move the rest of the models in a loop from behind the camera to the front
+//for (let i = 0; i < models.length; i++) {
+//    if (i == 2) {
+//        continue;
+//    }
+//    models[i].addComponent(new LinearAnimator(models[i], {
+//        startPosition: [models[3].getComponentOfType(Transform).translation[0], models[3].getComponentOfType(Transform).translation[1], models[3].getComponentOfType(Transform).translation[2]],
+//        endPosition: [models[3].getComponentOfType(Transform).translation[0], models[3].getComponentOfType(Transform).translation[1], models[3].getComponentOfType(Transform).translation[2] + 120],
+//        startTime: 0, // Adjust the delay based on your requirements
+//        duration: 10,
+//        loop: true,
+//    }));
+//}
 
 function update(time, dt) {
     scene.traverse(node => {
