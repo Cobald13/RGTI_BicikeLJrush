@@ -62,42 +62,37 @@ light.addComponent(new Light({
 //}))
 scene.addChild(light);
 
-//we get all the models from the scene
+//dobimo vse modele
 const models = scene.filter(node => node.getComponentOfType(Model));
-//we add linear animator to each model
-//to each model we add a different loop delay - first we loop the first model, then the second, then the third...
+
+//prvemu modelu - velikemu bloku dodamo le 1 animacijo/premik, po koncu model odstrani iz scene
+models[3].addComponent(new LinearAnimator(models[3], {
+    startPosition: [models[3].getComponentOfType(Transform).translation[0], models[3].getComponentOfType(Transform).translation[1], models[3].getComponentOfType(Transform).translation[2]],
+    endPosition: [models[3].getComponentOfType(Transform).translation[0], models[3].getComponentOfType(Transform).translation[1], models[3].getComponentOfType(Transform).translation[2] + 5 * (models[5].getComponentOfType(Transform).translation[2] - models[6].getComponentOfType(Transform).translation[2])],
+    duration: 10,
+    startTime: 0,
+    loop: false,
+}));
+setTimeout(() => {
+    scene.removeChild(models[3]);
+}, 10000);
+
+//dodajanje blokov scene v loopu
+var delayIndex = 0;
+
 models.forEach((model, index) => {
+    if (index == 3) {
+        return;
+    }
     model.addComponent(new LinearAnimator(model, {
-        startPosition: [model.getComponentOfType(Transform).translation[0], model.getComponentOfType(Transform).translation[1], model.getComponentOfType(Transform).translation[2]],
-        endPosition: [model.getComponentOfType(Transform).translation[0], model.getComponentOfType(Transform).translation[1], model.getComponentOfType(Transform).translation[2] + 20],
+        startPosition: [models[4].getComponentOfType(Transform).translation[0], models[4].getComponentOfType(Transform).translation[1], models[4].getComponentOfType(Transform).translation[2]],
+        endPosition: [models[4].getComponentOfType(Transform).translation[0], models[4].getComponentOfType(Transform).translation[1], models[4].getComponentOfType(Transform).translation[2] + 5 * (models[5].getComponentOfType(Transform).translation[2] - models[6].getComponentOfType(Transform).translation[2])],
         duration: 10,
-        startTime: index * 10,
+        startTime: delayIndex * 2,
         loop: true,
     }));
+    delayIndex++;
 });
-
-// Move the first model behind the camera and keep it there
-//models[2].addComponent(new LinearAnimator(models[2], {
-//    startPosition: [models[2].getComponentOfType(Transform).translation[0], models[2].getComponentOfType(Transform).translation[1], models[2].getComponentOfType(Transform).translation[2]],
-//    endPosition: [models[2].getComponentOfType(Transform).translation[0], models[2].getComponentOfType(Transform).translation[1], models[2].getComponentOfType(Transform).translation[2] + 120],
-//    startTime: 0,
-//    duration: 10,
-//    loop: false,
-//}));
-//
-//// Move the rest of the models in a loop from behind the camera to the front
-//for (let i = 0; i < models.length; i++) {
-//    if (i == 2) {
-//        continue;
-//    }
-//    models[i].addComponent(new LinearAnimator(models[i], {
-//        startPosition: [models[3].getComponentOfType(Transform).translation[0], models[3].getComponentOfType(Transform).translation[1], models[3].getComponentOfType(Transform).translation[2]],
-//        endPosition: [models[3].getComponentOfType(Transform).translation[0], models[3].getComponentOfType(Transform).translation[1], models[3].getComponentOfType(Transform).translation[2] + 120],
-//        startTime: 0, // Adjust the delay based on your requirements
-//        duration: 10,
-//        loop: true,
-//    }));
-//}
 
 const bike = gltfLoader.loadNode('Bike');
 // Don't move bike with the scene
