@@ -66,6 +66,7 @@ scene.addChild(light);
 const models = scene.filter(node => node.getComponentOfType(Model));
 
 //prvemu modelu - velikemu bloku dodamo le 1 animacijo/premik, po koncu model odstrani iz scene
+/*
 models[3].addComponent(new LinearAnimator(models[3], {
     startPosition: [models[3].getComponentOfType(Transform).translation[0], models[3].getComponentOfType(Transform).translation[1], models[3].getComponentOfType(Transform).translation[2]],
     endPosition: [models[3].getComponentOfType(Transform).translation[0], models[3].getComponentOfType(Transform).translation[1], models[3].getComponentOfType(Transform).translation[2] + 5 * (models[5].getComponentOfType(Transform).translation[2] - models[6].getComponentOfType(Transform).translation[2])],
@@ -76,17 +77,18 @@ models[3].addComponent(new LinearAnimator(models[3], {
 setTimeout(() => {
     scene.removeChild(models[3]);
 }, 10000);
+*/
 
 //dodajanje blokov scene v loopu
 var delayIndex = 0;
 
 models.forEach((model, index) => {
-    if (index == 3) {
-        return;
-    }
+    //if (index == 3) {
+    //    return;
+    //}
     model.addComponent(new LinearAnimator(model, {
-        startPosition: [models[4].getComponentOfType(Transform).translation[0], models[4].getComponentOfType(Transform).translation[1], models[4].getComponentOfType(Transform).translation[2]],
-        endPosition: [models[4].getComponentOfType(Transform).translation[0], models[4].getComponentOfType(Transform).translation[1], models[4].getComponentOfType(Transform).translation[2] + 5 * (models[5].getComponentOfType(Transform).translation[2] - models[6].getComponentOfType(Transform).translation[2])],
+        startPosition: [models[2].getComponentOfType(Transform).translation[0], models[2].getComponentOfType(Transform).translation[1], models[2].getComponentOfType(Transform).translation[2]],
+        endPosition: [models[2].getComponentOfType(Transform).translation[0], models[2].getComponentOfType(Transform).translation[1], models[2].getComponentOfType(Transform).translation[2] + 5 * (models[3].getComponentOfType(Transform).translation[2] - models[4].getComponentOfType(Transform).translation[2])],
         duration: 10,
         startTime: delayIndex * 2,
         loop: true,
