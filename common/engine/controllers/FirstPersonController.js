@@ -5,6 +5,7 @@ import { Transform } from '../core/Transform.js';
 export class FirstPersonController {
 
     constructor(node, domElement, {
+        dev = false,    // true: unlocks W, S keys and mouse
         pitch = 0,
         yaw = 0,
         velocity = [0, 0, 0],
@@ -18,6 +19,7 @@ export class FirstPersonController {
 
         this.keys = {};
 
+        this.dev = dev;
         this.pitch = pitch;
         this.yaw = yaw;
 
@@ -41,14 +43,16 @@ export class FirstPersonController {
         doc.addEventListener('keydown', this.keydownHandler);
         doc.addEventListener('keyup', this.keyupHandler);
 
-        element.addEventListener('click', e => element.requestPointerLock());
-        doc.addEventListener('pointerlockchange', e => {
-            if (doc.pointerLockElement === element) {
-                doc.addEventListener('pointermove', this.pointermoveHandler);
-            } else {
-                doc.removeEventListener('pointermove', this.pointermoveHandler);
-            }
-        });
+        if (this.dev) {
+            element.addEventListener('click', e => element.requestPointerLock());
+            doc.addEventListener('pointerlockchange', e => {
+                if (doc.pointerLockElement === element) {
+                    doc.addEventListener('pointermove', this.pointermoveHandler);
+                } else {
+                    doc.removeEventListener('pointermove', this.pointermoveHandler);
+                }
+            });
+        }
     }
 
     update(t, dt) {
@@ -60,10 +64,10 @@ export class FirstPersonController {
 
         // Map user input to the acceleration vector.
         const acc = vec3.create();
-        if (this.keys['KeyW']) {
+        if (this.keys['KeyW'] && this.dev) {
             vec3.add(acc, acc, forward);
         }
-        if (this.keys['KeyS']) {
+        if (this.keys['KeyS'] && this.dev) {
             vec3.sub(acc, acc, forward);
         }
         if (this.keys['KeyD']) {
