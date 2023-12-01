@@ -21,6 +21,7 @@ export class LinearAnimator {
         this.loop = loop;
 
         this.playing = true;
+        this.lastInterpolation = 0;
     }
 
     play() {
@@ -48,7 +49,15 @@ export class LinearAnimator {
             return;
         }
 
+        const isLoopRestarting = interpolation < this.lastInterpolation;
+
+        if (isLoopRestarting) {
+            console.log(this.node.name, "Reset");
+        }
+
+        // Update lastInterpolation for the next frame
+        this.lastInterpolation = interpolation;
+
         vec3.lerp(transform.translation, this.startPosition, this.endPosition, interpolation);
     }
-
 }
