@@ -22,6 +22,8 @@ export class LinearAnimator {
 
         this.playing = true;
         this.lastInterpolation = 0;
+
+        this.timeElapsed = 0;
     }
 
     play() {
@@ -33,11 +35,12 @@ export class LinearAnimator {
     }
 
     update(t, dt) {
-        if (!this.playing) {
+        this.timeElapsed += dt;
+        if (this.timeElapsed < this.startTime) {
             return;
         }
 
-        const linearInterpolation = (t - this.startTime) / this.duration;
+        const linearInterpolation = (this.timeElapsed - this.startTime) / this.duration;
         const clampedInterpolation = Math.min(Math.max(linearInterpolation, 0), 1);
         const loopedInterpolation = ((linearInterpolation % 1) + 1) % 1;
         this.updateNode(this.loop ? loopedInterpolation : clampedInterpolation);
