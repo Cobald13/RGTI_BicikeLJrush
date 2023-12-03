@@ -55,29 +55,64 @@ light.addComponent(new Light({
 //}))
 scene.addChild(light);
 
-// Scene scroll
 // dobimo vse modele
 const models = scene.filter(node => node.getComponentOfType(Model));
 
-const block_1 = models.find(obj => obj.name === "Landscape.001");
-const block_2 = models.find(obj => obj.name === "Landscape.002");
-const block_3 = models.find(obj => obj.name === "Landscape.003");
+//////////////////// Loop scene ////////////////////
 
-// Add linear animator to landscape blocks
-var delayIndex = 0;
+// modeli scene
+const scena = [];
 models.forEach((model) => {
-    if (model.name.startsWith("Landscape")) {
+    if (model.name.includes("Landscape") || model.name.includes("Start")) {
+        scena.push(model);
+    }
+});
+
+
+// sortiramo modele po imenu
+scena.sort((a, b) => {
+    const aIndex = parseInt(a.name.split('.')[1]);
+    const bIndex = parseInt(b.name.split('.')[1]);
+    return aIndex - bIndex;
+});
+
+const prviBlok = models.find(obj => obj.name === "Landscape.001");
+const prviXYZ = prviBlok.getComponentOfType(Transform).translation.slice();
+const dolzinaBloka = prviBlok.getComponentOfType(Transform).translation[2] - models.find(obj => obj.name === "Landscape.002").getComponentOfType(Transform).translation[2];
+
+var delayIndex = 0;
+scena.forEach((model) => {
+    //ce je ime bloka Start, se ne bo loopal
+    if (model.name.includes("Start")) {
         model.addComponent(new LinearAnimator(model, {
             startPosition: [
-                block_1.getComponentOfType(Transform).translation[0],
-                block_1.getComponentOfType(Transform).translation[1],
-                block_1.getComponentOfType(Transform).translation[2]
+                model.getComponentOfType(Transform).translation[0],
+                model.getComponentOfType(Transform).translation[1],
+                model.getComponentOfType(Transform).translation[2]
             ],
             endPosition: [
-                block_1.getComponentOfType(Transform).translation[0],
-                block_1.getComponentOfType(Transform).translation[1],
-                block_1.getComponentOfType(Transform).translation[2] + 
-                    5 * (block_2.getComponentOfType(Transform).translation[2] - block_3.getComponentOfType(Transform).translation[2])
+                model.getComponentOfType(Transform).translation[0],
+                model.getComponentOfType(Transform).translation[1],
+                model.getComponentOfType(Transform).translation[2] + 
+                    5 * dolzinaBloka
+            ],
+            duration: 10,
+            startTime: 0,
+            loop: false,
+        }));
+    }
+    else {
+        model.addComponent(new LinearAnimator(model, {
+            startPosition: [
+                prviBlok.getComponentOfType(Transform).translation[0],
+                prviBlok.getComponentOfType(Transform).translation[1],
+                prviBlok.getComponentOfType(Transform).translation[2]
+            ],
+            endPosition: [
+                prviBlok.getComponentOfType(Transform).translation[0],
+                prviBlok.getComponentOfType(Transform).translation[1],
+                prviBlok.getComponentOfType(Transform).translation[2] + 
+                    5 * dolzinaBloka
             ],
             duration: 10,
             startTime: delayIndex * 2,
@@ -86,6 +121,163 @@ models.forEach((model) => {
         delayIndex++;
     }
 });
+
+//////////////////// Konec loop scene ////////////////////
+
+//////////////////// Sistem ovir ////////////////////
+
+// modeli ovir
+const ovire = [];
+models.forEach((model) => {
+    if (model.name.includes("Ovira")) {
+        ovire.push(model);
+        //oviram dodamo boolean, ki pove, če je ovira trenutno prosta za uporabo
+        ovire[ovire.length - 1].prosta = true;
+        //oviram dodamo atribut, ki pove njen začetni položaj
+        ovire[ovire.length - 1].zacetniXYZ = model.getComponentOfType(Transform).translation.slice();
+    }
+});
+
+var stProstihOvir = ovire.length;
+var stOvir = ovire.length;
+
+//izvajamo zanko v neskončnost vsake 1 - 5 sekund
+setInterval(function () {
+    //preverimo, če je število prostih ovir večje od 0
+    if (stProstihOvir > 0) {
+        //izberemo naključno oviro in preverimo, če je prosta
+        var randomOvira = Math.floor(Math.random() * stOvir);
+        if (ovire[randomOvira].prosta) {
+
+            //dodamo naključen timer, ki pove, čez koliko časa bomo oviro postavili na sceno - med 1 in 5 sekund in zmanjšamo število prostih ovir
+            //random timer doda "naključno z komponento"
+            var randomTimer = Math.floor(Math.random() * 5) + 1;
+            stProstihOvir--;
+            ovire[randomOvira].prosta = false;
+
+            //dodamo varianco x koordinate, da se ovire ne postavijo v isto vrsto - med -4 in +6
+            var randomX = Math.random() * 10 - 4;
+
+            //timer uporabimo v LinearAnimatorju startTime
+            ovire[randomOvira].addComponent(new LinearAnimator(ovire[randomOvira], {
+                startPosition: [
+                    prviXYZ[0] + randomX,
+                    prviXYZ[1],
+                    prviXYZ[2]
+                ],
+                endPosition: [
+                    prviXYZ[0] + randomX,
+                    prviXYZ[1],
+                    prviXYZ[2] + 5 * dolzinaBloka
+                ],
+                duration: 10,
+                loop: false,
+                startTime: randomTimer,
+            }));
+            //ko je ovira na koncu poti, ji odstranimo animator in jo postavimo na začetni položaj
+            setTimeout(function () {
+                ovire[randomOvira].removeComponent(LinearAnimator);
+                ovire[randomOvira].getComponentOfType(Transform).translation = ovire[randomOvira].zacetniXYZ;
+                console.log(ovire[randomOvira].getComponentOfType(Transform).translation); // Check the value immediately after setting it
+                ovire[randomOvira].prosta = true;
+                stProstihOvir++;
+            }, 10000 + randomTimer * 1000 + 1000);
+        }
+        else {
+            //če ovira ni prosta, ponovimo zanko
+            console.log("ovira ni prosta");
+            return;
+        }
+    }
+    else {
+        //če ni prostih ovir, ponovimo zanko
+        return;
+    }
+}, 1000 * (Math.floor(Math.random() * 5) + 1));
+
+/*
+//oviram dodamo LinearAnimator, ki jih bo postavil na sceno
+//dodamo random začetni čas in random x koordinato
+ovire.forEach((ovira) => {
+    var randomTimer = Math.random() * 14 + 1;
+    console.log(randomTimer);
+    var randomX = Math.random() * 10 - 5;
+
+    ovira.addComponent(new LinearAnimator(ovira, {
+        startPosition: [
+            prviXYZ[0] + randomX,
+            prviXYZ[1],
+            -100
+        ],
+        endPosition: [
+            prviXYZ[0] + randomX,
+            prviXYZ[1],
+            -100 + 7 * dolzinaBloka
+        ],
+        duration: 14,
+        loop: true,
+        startTime: 5,
+    }));
+});
+*/
+
+/*
+//izvajamo zanko vsako sekundo
+setInterval(function () {
+    //preverimo, če je število prostih ovir večje od 0
+    if (stProstihOvir > 0) {
+        //izberemo naključno oviro in preverimo, če je prosta
+        var randomOvira = Math.floor(Math.random() * stOvir);
+        if (ovire[randomOvira].prosta) {
+
+            //dodamo naključen timer, ki pove, čez koliko časa bomo oviro postavili na sceno - med 1 in 5 sekund in zmanjšamo število prostih ovir
+            var randomTimer = Math.floor(Math.random() * 5) + 1;
+            stProstihOvir--;
+            ovire[randomOvira].prosta = false;
+
+            //nastavimo timer randomTimer
+            setTimeout(function () {
+                ovire[randomOvira].addComponent(new LinearAnimator(ovire[randomOvira], {
+                    startPosition: [
+                        prviXYZ[0],
+                        prviXYZ[1],
+                        prviXYZ[2]
+                    ],
+                    endPosition: [
+                        prviXYZ[0],
+                        prviXYZ[1],
+                        prviXYZ[2] + 5 * dolzinaBloka
+                    ],
+                    duration: 10,
+                    loop: false,
+                    startTime: 0,
+                }));
+                //console.log(prviXYZ);
+                //console.log(ovire[randomOvira].getComponentOfType(LinearAnimator).startPosition);
+                console.log("postavitev ovire na lokacijo: " + ovire[randomOvira].getComponentOfType(LinearAnimator).endPosition);
+                setTimeout(function () {
+                    ovire[randomOvira].removeComponent(LinearAnimator);
+                    ovire[randomOvira].getComponentOfType(Transform).translation = ovire[randomOvira].zacetniXYZ;
+                    console.log(ovire[randomOvira].getComponentOfType(Transform).translation); // Check the value immediately after setting it
+                    console.log("odstranitev ovire na lokacijo: " + ovire[randomOvira].zacetniXYZ);
+                }, 10000 + randomTimer * 1000 + 1000);
+            }, randomTimer * 1000)
+            //po končani animaciji oviri odstranimo animator in jo postavimo na začetni položaj
+        }
+        else {
+            //če ovira ni prosta, ponovimo zanko
+            console.log("ovira ni prosta");
+            return;
+        }
+    }
+    else {
+        //če ni prostih ovir, ponovimo zanko
+        return;
+    }
+}, 1000);
+*/
+
+//////////////////// Konec sistema ovir ////////////////////
 
 // Bike
 const bike = gltfLoader.loadNode("Bike");
