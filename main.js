@@ -26,6 +26,7 @@ import {
     Node,
     Transform,
 } from './common/engine/core.js';
+import { MiddleStepAnimator } from './common/engine/animators/MiddleStepAnimator.js';
 
 const canvas = document.querySelector("canvas");
 
@@ -124,6 +125,14 @@ scena.forEach((model) => {
 
 //////////////////// Konec loop scene ////////////////////
 
+//////////////////// Preverjanje colisionov ovir in coinov ////////////////////
+
+//shranimo si zadnji 2 oviri in zadnji 2 coina
+var zadnjiOviri = [];
+var zadnjiCoini = [];
+
+//////////////////// Konec preverjanja colisionov ovir in coinov ////////////////////
+
 //////////////////// Sistem ovir ////////////////////
 
 // modeli ovir
@@ -162,12 +171,12 @@ setInterval(function () {
             ovire[randomOvira].addComponent(new LinearAnimator(ovire[randomOvira], {
                 startPosition: [
                     prviXYZ[0] + randomX,
-                    prviXYZ[1],
+                    prviXYZ[1] + 1,
                     prviXYZ[2]
                 ],
                 endPosition: [
                     prviXYZ[0] + randomX,
-                    prviXYZ[1],
+                    prviXYZ[1] + 1,
                     prviXYZ[2] + 5 * dolzinaBloka
                 ],
                 duration: 10,
@@ -196,6 +205,115 @@ setInterval(function () {
 }, 1000 * (Math.floor(Math.random() * 5) + 1));
 
 //////////////////// Konec sistema ovir ////////////////////
+
+//////////////////// Sistem Coinov ////////////////////
+
+// modeli coinov
+const coins = [];
+models.forEach((model) => {
+    if (model.name.includes("Coin")) {
+        coins.push(model);
+        //coinom dodamo boolean, ki pove, če je coin trenutno prosta za uporabo
+        coins[coins.length - 1].prost = true;
+        //coinom dodamo atribut, ki pove njen začetni položaj
+        coins[coins.length - 1].zacetniXYZ = model.getComponentOfType(Transform).translation.slice();
+        //dodamo rotacijo
+        coins[coins.length - 1].addComponent(new RotateAnimator(coins[coins.length - 1], {
+            startRotation: [0, 0.70, 0, 1],
+            endRotation: [0, -0.70, 0, 1],
+            startTime: 0,
+            duration: 1,
+            loop: true,
+        }));
+        /*trenutno "bobbing" animacijo prekine LinearAnimator
+        coins[coins.length - 1].addComponent(new MiddleStepAnimator(coins[coins.length - 1], {
+            startPosition: [
+                coins[coins.length - 1].getComponentOfType(Transform).translation[0],
+                coins[coins.length - 1].getComponentOfType(Transform).translation[1],
+                coins[coins.length - 1].getComponentOfType(Transform).translation[2]
+            ],
+            middlePosition: [
+                coins[coins.length - 1].getComponentOfType(Transform).translation[0],
+                coins[coins.length - 1].getComponentOfType(Transform).translation[1] + 0.5,
+                coins[coins.length - 1].getComponentOfType(Transform).translation[2]
+            ],
+            endPosition: [
+                coins[coins.length - 1].getComponentOfType(Transform).translation[0],
+                coins[coins.length - 1].getComponentOfType(Transform).translation[1],
+                coins[coins.length - 1].getComponentOfType(Transform).translation[2]
+            ],
+            startTime: 0,
+            duration: 1,
+            loop: true,
+        }));
+        */
+    }
+});
+
+var stProstihCoinov = coins.length;
+var stCoinov = coins.length;
+var izbranCoin = 0;
+
+//izvajamo zanko v neskončnost vsake 1 - 5 sekund
+setInterval(function () {
+    if (izbranCoin == stCoinov) {
+        izbranCoin = 0;
+    }
+    //preverimo, če je število prostih coinov večje od 0
+    if (stProstihCoinov > 0) {
+        //izberemo prvi coin v arrayu in preverimo, če je prost
+        //če ni prost, izberemo naslednjega, dokler ni izbran prost coin
+        if (izbranCoin < stCoinov && coins[izbranCoin].prost) {
+            console.log("coin " + izbranCoin + " je prost")
+            //dodamo naključen timer, ki pove, čez koliko časa bomo oviro postavili na sceno - med 1 in 5 sekund in zmanjšamo število prostih ovir
+            //random timer doda "naključno z komponento"
+            var randomTimer = Math.floor(Math.random() * 5) + 1;
+            stProstihCoinov--;
+            coins[izbranCoin].prost = false;
+
+            //dodamo varianco x koordinate, da se ovire ne postavijo v isto vrsto - med -4 in +6
+            var randomX = Math.random() * 10 - 4;
+
+            //timer uporabimo v LinearAnimatorju startTime
+            coins[izbranCoin].addComponent(new LinearAnimator(coins[izbranCoin], {
+                startPosition: [
+                    prviXYZ[0] + randomX,
+                    prviXYZ[1] + 1.2,
+                    prviXYZ[2]
+                ],
+                endPosition: [
+                    prviXYZ[0] + randomX,
+                    prviXYZ[1] + 1.2,
+                    prviXYZ[2] + 5 * dolzinaBloka
+                ],
+                duration: 10,
+                loop: false,
+                startTime: randomTimer,
+            }));
+            //ko je coin na koncu poti, mu odstranimo animator in ga postavimo na začetni položaj
+            var currentCoin = izbranCoin;
+            setTimeout(function () {
+                coins[currentCoin].removeComponent(LinearAnimator);
+                coins[currentCoin].getComponentOfType(Transform).translation = coins[currentCoin].zacetniXYZ;
+                console.log(coins[currentCoin].getComponentOfType(Transform).translation); // Check the value immediately after setting it
+                coins[currentCoin].prost = true;
+                stProstihCoinov++;
+            }, 10000 + randomTimer * 1000 + 1000);
+            izbranCoin++;
+        }
+        else {
+            //če coin ni prost, izberemo naslednjega
+            console.log("coin " + izbranCoin + " ni prost");
+            izbranCoin++;
+        }
+    }
+    else {
+        //če ni prostih coinov, ponovimo zanko
+        return;
+    }   //timeout nastavimo med 1 in 5 sekundami
+}, 1000 * (Math.floor(Math.random() * 5) + 1));
+
+//////////////////// Konec sistema coinov ////////////////////
 
 // Bike
 const bike = gltfLoader.loadNode("Bike");
