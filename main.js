@@ -32,29 +32,13 @@ const canvas = document.querySelector("canvas");
 
 const renderer = new Renderer(canvas);
 await renderer.initialize();
-
 const gltfLoader = new GLTFLoader();
 await gltfLoader.load("common/models/scenaImport/pls.gltf");
 
 const scene = gltfLoader.loadScene(gltfLoader.defaultScene);
 const camera = scene.find(node => node.getComponentOfType(Camera));
-camera.getComponentOfType(Camera).far = 1000;
+camera.getComponentOfType(Camera).far = 100;
 
-// Light
-const light = new Node();
-light.addComponent(new Transform({
-    translation: [3, 3, 3],
-}));
-light.addComponent(new Light({
-    ambient: 0.3,
-}));
-//light.addComponent(new LinearAnimator(light, {
-//    startPosition: [3, 3, 3],
-//    endPosition: [-3, -3, -3],
-//    duration: 5,
-//    loop: true,
-//}))
-scene.addChild(light);
 
 // dobimo vse modele
 const models = scene.filter(node => node.getComponentOfType(Model));
@@ -94,8 +78,8 @@ scena.forEach((model) => {
             endPosition: [
                 model.getComponentOfType(Transform).translation[0],
                 model.getComponentOfType(Transform).translation[1],
-                model.getComponentOfType(Transform).translation[2] + 
-                    5 * dolzinaBloka
+                model.getComponentOfType(Transform).translation[2] +
+                5 * dolzinaBloka
             ],
             duration: 10,
             startTime: 0,
@@ -112,8 +96,8 @@ scena.forEach((model) => {
             endPosition: [
                 prviBlok.getComponentOfType(Transform).translation[0],
                 prviBlok.getComponentOfType(Transform).translation[1],
-                prviBlok.getComponentOfType(Transform).translation[2] + 
-                    5 * dolzinaBloka
+                prviBlok.getComponentOfType(Transform).translation[2] +
+                5 * dolzinaBloka
             ],
             duration: 10,
             startTime: delayIndex * 2,
@@ -124,6 +108,34 @@ scena.forEach((model) => {
 });
 
 //////////////////// Konec loop scene ////////////////////
+
+//////////////////// Luči ////////////////////
+
+const light = new Node();
+light.addComponent(new Transform({
+    translation: [3, 3, 3],
+}));
+light.addComponent(new Light({
+    ambient: 0.5,
+}));
+light.addComponent(new LinearAnimator(light, {
+    //začetna lokacija je lokacija luči z imenom Luč.002
+    startPosition: [
+        models.find(obj => obj.name === "Luč.002").getComponentOfType(Transform).translation[0],
+        models.find(obj => obj.name === "Luč.002").getComponentOfType(Transform).translation[1] + 2,
+        models.find(obj => obj.name === "Luč.002").getComponentOfType(Transform).translation[2] - 8
+    ],
+    endPosition: [
+        models.find(obj => obj.name === "Luč.002").getComponentOfType(Transform).translation[0],
+        models.find(obj => obj.name === "Luč.002").getComponentOfType(Transform).translation[1] + 2,
+        models.find(obj => obj.name === "Luč.002").getComponentOfType(Transform).translation[2] - 8 + dolzinaBloka
+    ],
+    duration: 2,
+    loop: true,
+}))
+scene.addChild(light);
+
+//////////////////// Konec luči ////////////////////
 
 //////////////////// Preverjanje colisionov ovir in coinov ////////////////////
 
@@ -380,3 +392,5 @@ function resize({ displaySize: { width, height } }) {
 
 new ResizeSystem({ canvas, resize }).start();
 new UpdateSystem({ update, render }).start();
+
+
