@@ -27,6 +27,7 @@ import {
     Transform,
 } from './common/engine/core.js';
 import { MiddleStepAnimator } from './common/engine/animators/MiddleStepAnimator.js';
+import { MiddleStepRotateAnimator } from './common/engine/animators/MiddleStepRotateAnimator.js';
 
 const canvas = document.querySelector("canvas");
 
@@ -334,6 +335,86 @@ bike.addComponent(new FirstPersonController(bike, document.body, {
     maxSpeed: 25,
     // pitch: -0.3,
 }));
+
+//////////////////// Animacija kolesarja ////////////////////
+
+bike.find(node => node.name === "Sprednje_kolo").addComponent(new RotateAnimator(bike.find(node => node.name === "Sprednje_kolo"), {
+    startRotation: [0, 0, 0, 1],
+    endRotation: [-0.25, 0, 0, 1],
+    startTime: 0,
+    duration: 0.1,
+    loop: true,
+}));
+bike.find(node => node.name === "Zadnje_Kolo").addComponent(new RotateAnimator(bike.find(node => node.name === "Zadnje_Kolo"), {
+    startRotation: [0, 0, 0, 1],
+    endRotation: [-0.25, 0, 0, 1],
+    startTime: 0,
+    duration: 0.1,
+    loop: true,
+}));
+//dobimo node Noga_desna in dodamo middlesteprotateanimator
+console.log(bike.find(node => node.name === "Noga_desna"));
+bike.find(node => node.name === "Noga_desna").addComponent(new MiddleStepRotateAnimator(bike.find(node => node.name === "Noga_desna"), {
+    startRotation: [0.10, 0, 0, 1],
+    middleRotation: [-0.15, -0.02, 0.02, 1],
+    endRotation: [0.10, 0, 0, 1],
+    startTime: 0,
+    duration: 1,
+    loop: true,
+}));
+//dobimo node Noga_leva in dodamo middlesteprotateanimator
+console.log(bike.find(node => node.name === "Noga_leva"));
+bike.find(node => node.name === "Noga_leva").addComponent(new MiddleStepRotateAnimator(bike.find(node => node.name === "Noga_leva"), {
+    startRotation: [-0.05, 0.05, -0.02, 1],
+    middleRotation: [0.25, 0, 0, 1],
+    endRotation: [-0.05, 0.05, -0.02, 1],
+    startTime: 0,
+    duration: 1,
+    loop: true,
+}));
+//dobimo node Balanca in dodamo middlesteprotateanimator
+console.log(bike.find(node => node.name === "Balanca"));
+bike.find(node => node.name === "Balanca").addComponent(new MiddleStepRotateAnimator(bike.find(node => node.name === "Balanca"), {
+    startRotation: [0, 0.05, 0, 1],
+    middleRotation: [0, -0.05, 0, 1],
+    endRotation: [0, 0.05, 0, 1],
+    startTime: 0,
+    duration: 1,
+    loop: true,
+}));
+//dobimo node kolo in mu dodamo middlesteprotateanimator
+console.log(bike.find(node => node.name === "Bike"));
+//bike.find(node => node.name === "Bike").addComponent(new MiddleStepRotateAnimator(bike.find(node => node.name === "Bike"), {
+//    startRotation: [0, 0, 0.02, 1],
+//    middleRotation: [0, 0, -0.02, 1],
+//    endRotation: [0, 0, 0.02, 1],
+//    startTime: 0,
+//    duration: 1,
+//    loop: true,
+//}));
+//dobimo node Pedala in mu dodamo middlesteprotateanimator
+console.log(bike.find(node => node.name === "Pedala"));
+bike.find(node => node.name === "Pedala").addComponent(new MiddleStepRotateAnimator(bike.find(node => node.name === "Pedala"), {
+    startRotation: [0.4, 0, 0, 1],
+    middleRotation: [-0.4, 0, 0, 1],
+    endRotation: [0.4, 0, 0, 1],
+    startTime: 0,
+    duration: 1,
+    loop: true,
+}));
+//dobimo node kolesar in mu dodamo middlesteprotateanimator
+console.log(bike.find(node => node.name === "Kolesar"));
+const kolesar = bike.find(node => node.name === "Kolesar");
+bike.find(node => node.name === "Kolesar").addComponent(new MiddleStepRotateAnimator(bike.find(node => node.name === "Kolesar"), {
+    startRotation: [0, 0, 0.01, 1],
+    middleRotation: [0, 0, -0.01, 1],
+    endRotation: [0, 0, 0.01, 1],
+    startTime: 0,
+    duration: 1,
+    loop: true,
+}));
+
+//////////////////// Konec animacij kolesarja ////////////////////
 
 // Collision detection
 bike.isDynamic = true;
