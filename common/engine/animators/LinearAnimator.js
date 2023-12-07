@@ -55,7 +55,7 @@ export class LinearAnimator {
         const isLoopRestarting = interpolation < this.lastInterpolation;
 
         if (isLoopRestarting) {
-            console.log(this.node.name, "Reset");
+            // console.log(this.node.name, "Reset");
         }
 
         // Update lastInterpolation for the next frame

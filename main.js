@@ -199,14 +199,14 @@ setInterval(function () {
             setTimeout(function () {
                 ovire[randomOvira].removeComponent(LinearAnimator);
                 ovire[randomOvira].getComponentOfType(Transform).translation = ovire[randomOvira].zacetniXYZ;
-                console.log(ovire[randomOvira].getComponentOfType(Transform).translation); // Check the value immediately after setting it
+                // console.log(ovire[randomOvira].getComponentOfType(Transform).translation); // Check the value immediately after setting it
                 ovire[randomOvira].prosta = true;
                 stProstihOvir++;
             }, 10000 + randomTimer * 1000 + 1000);
         }
         else {
             //če ovira ni prosta, ponovimo zanko
-            console.log("ovira ni prosta");
+            // console.log("ovira ni prosta");
             return;
         }
     }
@@ -276,7 +276,7 @@ setInterval(function () {
         //izberemo prvi coin v arrayu in preverimo, če je prost
         //če ni prost, izberemo naslednjega, dokler ni izbran prost coin
         if (izbranCoin < stCoinov && coins[izbranCoin].prost) {
-            console.log("coin " + izbranCoin + " je prost")
+            // console.log("coin " + izbranCoin + " je prost")
             //dodamo naključen timer, ki pove, čez koliko časa bomo oviro postavili na sceno - med 1 in 5 sekund in zmanjšamo število prostih ovir
             //random timer doda "naključno z komponento"
             var randomTimer = Math.floor(Math.random() * 5) + 1;
@@ -307,7 +307,7 @@ setInterval(function () {
             setTimeout(function () {
                 coins[currentCoin].removeComponent(LinearAnimator);
                 coins[currentCoin].getComponentOfType(Transform).translation = coins[currentCoin].zacetniXYZ;
-                console.log(coins[currentCoin].getComponentOfType(Transform).translation); // Check the value immediately after setting it
+                // console.log(coins[currentCoin].getComponentOfType(Transform).translation); // Check the value immediately after setting it
                 coins[currentCoin].prost = true;
                 stProstihCoinov++;
             }, 10000 + randomTimer * 1000 + 1000);
@@ -315,7 +315,7 @@ setInterval(function () {
         }
         else {
             //če coin ni prost, izberemo naslednjega
-            console.log("coin " + izbranCoin + " ni prost");
+            // console.log("coin " + izbranCoin + " ni prost");
             izbranCoin++;
         }
     }
@@ -330,7 +330,7 @@ setInterval(function () {
 // Bike
 const bike = gltfLoader.loadNode("Bike");
 bike.addComponent(new FirstPersonController(bike, document.body, {
-    dev: true,
+    dev: false,
     maxSpeed: 25,
     // pitch: -0.3,
 }));
