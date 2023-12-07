@@ -38,16 +38,17 @@ await gltfLoader.load("common/models/scenaImport/pls.gltf");
 
 export function startGame() {
     document.getElementById('main-menu').style.display = 'none';
-    
+
     const scene = gltfLoader.loadScene(gltfLoader.defaultScene);
     const camera = scene.find(node => node.getComponentOfType(Camera));
     camera.getComponentOfType(Camera).far = 100;
-    
+
+
     // dobimo vse modele
     const models = scene.filter(node => node.getComponentOfType(Model));
-    
+
     //////////////////// Loop scene ////////////////////
-    
+
     // modeli scene
     const scena = [];
     models.forEach((model) => {
@@ -55,19 +56,19 @@ export function startGame() {
             scena.push(model);
         }
     });
-    
-    
+
+
     // sortiramo modele po imenu
     scena.sort((a, b) => {
         const aIndex = parseInt(a.name.split('.')[1]);
         const bIndex = parseInt(b.name.split('.')[1]);
         return aIndex - bIndex;
     });
-    
+
     const prviBlok = models.find(obj => obj.name === "Landscape.001");
     const prviXYZ = prviBlok.getComponentOfType(Transform).translation.slice();
     const dolzinaBloka = prviBlok.getComponentOfType(Transform).translation[2] - models.find(obj => obj.name === "Landscape.002").getComponentOfType(Transform).translation[2];
-    
+
     var delayIndex = 0;
     scena.forEach((model) => {
         //ce je ime bloka Start, se ne bo loopal
@@ -109,11 +110,11 @@ export function startGame() {
             delayIndex++;
         }
     });
-    
+
     //////////////////// Konec loop scene ////////////////////
-    
+
     //////////////////// Luči ////////////////////
-    
+
     const light = new Node();
     light.addComponent(new Transform({
         translation: [3, 3, 3],
@@ -137,19 +138,19 @@ export function startGame() {
         loop: true,
     }))
     scene.addChild(light);
-    
+
     //////////////////// Konec luči ////////////////////
-    
+
     //////////////////// Preverjanje colisionov ovir in coinov ////////////////////
-    
+
     //shranimo si zadnji 2 oviri in zadnji 2 coina
     var zadnjiOviri = [];
     var zadnjiCoini = [];
-    
+
     //////////////////// Konec preverjanja colisionov ovir in coinov ////////////////////
-    
+
     //////////////////// Sistem ovir ////////////////////
-    
+
     // modeli ovir
     const ovire = [];
     models.forEach((model) => {
@@ -161,10 +162,10 @@ export function startGame() {
             ovire[ovire.length - 1].zacetniXYZ = model.getComponentOfType(Transform).translation.slice();
         }
     });
-    
+
     var stProstihOvir = ovire.length;
     var stOvir = ovire.length;
-    
+
     //izvajamo zanko v neskončnost vsake 1 - 5 sekund
     setInterval(function () {
         //preverimo, če je število prostih ovir večje od 0
@@ -172,16 +173,16 @@ export function startGame() {
             //izberemo naključno oviro in preverimo, če je prosta
             var randomOvira = Math.floor(Math.random() * stOvir);
             if (ovire[randomOvira].prosta) {
-    
+
                 //dodamo naključen timer, ki pove, čez koliko časa bomo oviro postavili na sceno - med 1 in 5 sekund in zmanjšamo število prostih ovir
                 //random timer doda "naključno z komponento"
                 var randomTimer = Math.floor(Math.random() * 5) + 1;
                 stProstihOvir--;
                 ovire[randomOvira].prosta = false;
-    
+
                 //dodamo varianco x koordinate, da se ovire ne postavijo v isto vrsto - med -4 in +6
                 var randomX = Math.random() * 10 - 4;
-    
+
                 //timer uporabimo v LinearAnimatorju startTime
                 ovire[randomOvira].addComponent(new LinearAnimator(ovire[randomOvira], {
                     startPosition: [
@@ -202,14 +203,14 @@ export function startGame() {
                 setTimeout(function () {
                     ovire[randomOvira].removeComponent(LinearAnimator);
                     ovire[randomOvira].getComponentOfType(Transform).translation = ovire[randomOvira].zacetniXYZ;
-                    console.log(ovire[randomOvira].getComponentOfType(Transform).translation); // Check the value immediately after setting it
+                    // console.log(ovire[randomOvira].getComponentOfType(Transform).translation); // Check the value immediately after setting it
                     ovire[randomOvira].prosta = true;
                     stProstihOvir++;
                 }, 10000 + randomTimer * 1000 + 1000);
             }
             else {
                 //če ovira ni prosta, ponovimo zanko
-                console.log("ovira ni prosta");
+                // console.log("ovira ni prosta");
                 return;
             }
         }
@@ -218,11 +219,11 @@ export function startGame() {
             return;
         }
     }, 1000 * (Math.floor(Math.random() * 5) + 1));
-    
+
     //////////////////// Konec sistema ovir ////////////////////
-    
+
     //////////////////// Sistem Coinov ////////////////////
-    
+
     // modeli coinov
     const coins = [];
     models.forEach((model) => {
@@ -264,11 +265,11 @@ export function startGame() {
             */
         }
     });
-    
+
     var stProstihCoinov = coins.length;
     var stCoinov = coins.length;
     var izbranCoin = 0;
-    
+
     //izvajamo zanko v neskončnost vsake 1 - 5 sekund
     setInterval(function () {
         if (izbranCoin == stCoinov) {
@@ -279,16 +280,16 @@ export function startGame() {
             //izberemo prvi coin v arrayu in preverimo, če je prost
             //če ni prost, izberemo naslednjega, dokler ni izbran prost coin
             if (izbranCoin < stCoinov && coins[izbranCoin].prost) {
-                console.log("coin " + izbranCoin + " je prost")
+                // console.log("coin " + izbranCoin + " je prost")
                 //dodamo naključen timer, ki pove, čez koliko časa bomo oviro postavili na sceno - med 1 in 5 sekund in zmanjšamo število prostih ovir
                 //random timer doda "naključno z komponento"
                 var randomTimer = Math.floor(Math.random() * 5) + 1;
                 stProstihCoinov--;
                 coins[izbranCoin].prost = false;
-    
+
                 //dodamo varianco x koordinate, da se ovire ne postavijo v isto vrsto - med -4 in +6
                 var randomX = Math.random() * 10 - 4;
-    
+
                 //timer uporabimo v LinearAnimatorju startTime
                 coins[izbranCoin].addComponent(new LinearAnimator(coins[izbranCoin], {
                     startPosition: [
@@ -310,7 +311,7 @@ export function startGame() {
                 setTimeout(function () {
                     coins[currentCoin].removeComponent(LinearAnimator);
                     coins[currentCoin].getComponentOfType(Transform).translation = coins[currentCoin].zacetniXYZ;
-                    console.log(coins[currentCoin].getComponentOfType(Transform).translation); // Check the value immediately after setting it
+                    // console.log(coins[currentCoin].getComponentOfType(Transform).translation); // Check the value immediately after setting it
                     coins[currentCoin].prost = true;
                     stProstihCoinov++;
                 }, 10000 + randomTimer * 1000 + 1000);
@@ -318,7 +319,7 @@ export function startGame() {
             }
             else {
                 //če coin ni prost, izberemo naslednjega
-                console.log("coin " + izbranCoin + " ni prost");
+                // console.log("coin " + izbranCoin + " ni prost");
                 izbranCoin++;
             }
         }
@@ -327,19 +328,19 @@ export function startGame() {
             return;
         }   //timeout nastavimo med 1 in 5 sekundami
     }, 1000 * (Math.floor(Math.random() * 5) + 1));
-    
+
     //////////////////// Konec sistema coinov ////////////////////
-    
+
     // Bike
     const bike = gltfLoader.loadNode("Bike");
     bike.addComponent(new FirstPersonController(bike, document.body, {
-        dev: true,
+        dev: false,
         maxSpeed: 25,
         // pitch: -0.3,
     }));
-    
+
     //////////////////// Animacija kolesarja ////////////////////
-    
+
     bike.find(node => node.name === "Sprednje_kolo").addComponent(new RotateAnimator(bike.find(node => node.name === "Sprednje_kolo"), {
         startRotation: [0, 0, 0, 1],
         endRotation: [-0.25, 0, 0, 1],
@@ -355,7 +356,7 @@ export function startGame() {
         loop: true,
     }));
     //dobimo node Noga_desna in dodamo middlesteprotateanimator
-    console.log(bike.find(node => node.name === "Noga_desna"));
+    //console.log(bike.find(node => node.name === "Noga_desna"));
     bike.find(node => node.name === "Noga_desna").addComponent(new MiddleStepRotateAnimator(bike.find(node => node.name === "Noga_desna"), {
         startRotation: [0.10, 0, 0, 1],
         middleRotation: [-0.15, -0.02, 0.02, 1],
@@ -365,7 +366,7 @@ export function startGame() {
         loop: true,
     }));
     //dobimo node Noga_leva in dodamo middlesteprotateanimator
-    console.log(bike.find(node => node.name === "Noga_leva"));
+    //console.log(bike.find(node => node.name === "Noga_leva"));
     bike.find(node => node.name === "Noga_leva").addComponent(new MiddleStepRotateAnimator(bike.find(node => node.name === "Noga_leva"), {
         startRotation: [-0.05, 0.05, -0.02, 1],
         middleRotation: [0.25, 0, 0, 1],
@@ -375,7 +376,7 @@ export function startGame() {
         loop: true,
     }));
     //dobimo node Balanca in dodamo middlesteprotateanimator
-    console.log(bike.find(node => node.name === "Balanca"));
+    //console.log(bike.find(node => node.name === "Balanca"));
     bike.find(node => node.name === "Balanca").addComponent(new MiddleStepRotateAnimator(bike.find(node => node.name === "Balanca"), {
         startRotation: [0, 0.05, 0, 1],
         middleRotation: [0, -0.05, 0, 1],
@@ -385,7 +386,7 @@ export function startGame() {
         loop: true,
     }));
     //dobimo node kolo in mu dodamo middlesteprotateanimator
-    console.log(bike.find(node => node.name === "Bike"));
+    //console.log(bike.find(node => node.name === "Bike"));
     //bike.find(node => node.name === "Bike").addComponent(new MiddleStepRotateAnimator(bike.find(node => node.name === "Bike"), {
     //    startRotation: [0, 0, 0.02, 1],
     //    middleRotation: [0, 0, -0.02, 1],
@@ -395,7 +396,7 @@ export function startGame() {
     //    loop: true,
     //}));
     //dobimo node Pedala in mu dodamo middlesteprotateanimator
-    console.log(bike.find(node => node.name === "Pedala"));
+    //console.log(bike.find(node => node.name === "Pedala"));
     bike.find(node => node.name === "Pedala").addComponent(new MiddleStepRotateAnimator(bike.find(node => node.name === "Pedala"), {
         startRotation: [0.4, 0, 0, 1],
         middleRotation: [-0.4, 0, 0, 1],
@@ -405,7 +406,7 @@ export function startGame() {
         loop: true,
     }));
     //dobimo node kolesar in mu dodamo middlesteprotateanimator
-    console.log(bike.find(node => node.name === "Kolesar"));
+    //console.log(bike.find(node => node.name === "Kolesar"));
     const kolesar = bike.find(node => node.name === "Kolesar");
     bike.find(node => node.name === "Kolesar").addComponent(new MiddleStepRotateAnimator(bike.find(node => node.name === "Kolesar"), {
         startRotation: [0, 0, 0.01, 1],
@@ -415,31 +416,31 @@ export function startGame() {
         duration: 1,
         loop: true,
     }));
-    
+
     //////////////////// Konec animacij kolesarja ////////////////////
-    
+
     // Collision detection
     bike.isDynamic = true;
     // bike.aabb = {
     //     min: [-0.2, -0.2, -0.2],
     //     max: [0.2, 0.2, 0.2],
     // };
-    
+
     // Obstacles - static
     gltfLoader.loadNode("Cube.000").isStatic = true;
     gltfLoader.loadNode("Box.000").isStatic = true;
     gltfLoader.loadNode("Monkey.000").isStatic = true;
-    
+
     const physics = new Physics(scene);
     scene.traverse(node => {
         const model = node.getComponentOfType(Model);
         if (!model) {
             return;
         }
-    
+
         const boxes = model.primitives.map(primitive => calculateAxisAlignedBoundingBox(primitive.mesh));
         // console.log(boxes.length, node.name, model.primitives);
-    
+
         // Bike
         if (boxes.length == 2) {
             node.aabb = mergeAxisAlignedBoundingBoxes([boxes[0]]);
@@ -449,31 +450,31 @@ export function startGame() {
             node.aabb = mergeAxisAlignedBoundingBoxes(boxes);
         }
     });
-    
-    
+
+
     function update(time, dt) {
         // Move bike & camera forwards
         // bike.getComponentOfType(Transform).translation[2] -= dt*3
         // camera.getComponentOfType(Transform).translation[2] -= dt*3
-    
+
         scene.traverse(node => {
             for (const component of node.components) {
                 component.update?.(time, dt);
             }
         });
-    
+
         physics.update(time, dt);
     }
-    
+
     function render() {
         renderer.render(scene, camera);
     }
-    
+
     function resize({ displaySize: { width, height } }) {
         camera.getComponentOfType(Camera).aspect = width / height;
     }
-    
+
     new ResizeSystem({ canvas, resize }).start();
     new UpdateSystem({ update, render }).start();
-}
 
+}

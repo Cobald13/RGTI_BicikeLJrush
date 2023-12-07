@@ -11,8 +11,10 @@ export class FirstPersonController {
         velocity = [0, 0, 0],
         acceleration = 50,
         maxSpeed = 5,
-        decay = 0.99999,
+        decay = 1,
         pointerSensitivity = 0.002,
+        maxTranslationA = -4.2,
+        maxTranslationD = 4.1,
     } = {}) {
         this.node = node;
         this.domElement = domElement;
@@ -28,6 +30,9 @@ export class FirstPersonController {
         this.maxSpeed = maxSpeed;
         this.decay = decay;
         this.pointerSensitivity = pointerSensitivity;
+
+        this.maxTranslationA = maxTranslationA;
+        this.maxTranslationD = maxTranslationD;
 
         this.initHandlers();
     }
@@ -98,15 +103,33 @@ export class FirstPersonController {
 
         const transform = this.node.getComponentOfType(Transform);
         if (transform) {
-            // Update translation based on velocity.
-            vec3.scaleAndAdd(transform.translation,
-                transform.translation, this.velocity, dt);
+            if (!this.dev) {
+                // Allow next transformation only if it stays within allowed range [m]
+                const tmp = [...transform.translation];
+                vec3.scaleAndAdd(tmp, tmp, this.velocity, dt);
+                if (tmp[0] < this.maxTranslationA) {
+                    transform.translation[0] = this.maxTranslationA;
+                    this.keys["KeyA"] = false;
+                } else if (tmp[0] > this.maxTranslationD) {
+                    transform.translation[0] = this.maxTranslationD;
+                    this.keys["KeyD"] = false;
+                } else {
+                    vec3.scaleAndAdd(transform.translation,
+                        transform.translation, this.velocity, dt);
+                }
+            }
 
-            // Update rotation based on the Euler angles.
-            const rotation = quat.create();
-            quat.rotateY(rotation, rotation, this.yaw);
-            quat.rotateX(rotation, rotation, this.pitch);
-            transform.rotation = rotation;
+            if (this.dev) {
+                // Update translation based on velocity.
+                vec3.scaleAndAdd(transform.translation,
+                    transform.translation, this.velocity, dt);
+
+                // Update rotation based on the Euler angles.
+                const rotation = quat.create();
+                quat.rotateY(rotation, rotation, this.yaw);
+                quat.rotateX(rotation, rotation, this.pitch);
+                transform.rotation = rotation;
+            }
         }
     }
 
@@ -125,6 +148,10 @@ export class FirstPersonController {
     }
 
     keydownHandler(e) {
+        // Max one key is pressed
+        // for (const key in this.keys) {
+        //     this.keys[key] = false;
+        // }
         this.keys[e.code] = true;
     }
 
