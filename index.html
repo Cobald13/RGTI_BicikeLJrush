@@ -5,14 +5,23 @@
     <meta charset="utf-8">
     <title>BicikeLJ rush</title>
     <link rel="stylesheet" href="common/style.css">
+    <link rel="stylesheet" href="common/test.css">
     <script src="lib/gl-matrix-min.js"></script>
-    <script type="module" src="main.js"></script>
 </head>
 
 <body>
     <div class="fullscreen">
         <canvas></canvas>
+        <div id="main-menu">
+            <h1>BicikeLJ rush</h1>
+            <button onclick="startGame()">Play</button>
+        </div>
     </div>
+    <script type="module">
+        import { startGame } from './main.js';
+
+        window.startGame = startGame; // Make the function available globally
+    </script>
 </body>
 
 </html>
