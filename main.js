@@ -57,7 +57,6 @@ export function startGame() {
         }
     });
 
-
     // sortiramo modele po imenu
     scena.sort((a, b) => {
         const aIndex = parseInt(a.name.split('.')[1]);
@@ -68,6 +67,8 @@ export function startGame() {
     const prviBlok = models.find(obj => obj.name === "Landscape.001");
     const prviXYZ = prviBlok.getComponentOfType(Transform).translation.slice();
     const dolzinaBloka = prviBlok.getComponentOfType(Transform).translation[2] - models.find(obj => obj.name === "Landscape.002").getComponentOfType(Transform).translation[2];
+    const coins = [];
+    const ovire = [];
 
     var delayIndex = 0;
     scena.forEach((model) => {
@@ -89,6 +90,10 @@ export function startGame() {
                 startTime: 0,
                 loop: false,
             }));
+            setTimeout(function () {
+                model.removeComponent(LinearAnimator);
+                scene.removeChild(model);
+            }, 10000);
         }
         else {
             model.addComponent(new LinearAnimator(model, {
@@ -141,18 +146,9 @@ export function startGame() {
 
     //////////////////// Konec luči ////////////////////
 
-    //////////////////// Preverjanje colisionov ovir in coinov ////////////////////
-
-    //shranimo si zadnji 2 oviri in zadnji 2 coina
-    var zadnjiOviri = [];
-    var zadnjiCoini = [];
-
-    //////////////////// Konec preverjanja colisionov ovir in coinov ////////////////////
-
     //////////////////// Sistem ovir ////////////////////
 
     // modeli ovir
-    const ovire = [];
     models.forEach((model) => {
         if (model.name.includes("Ovira")) {
             ovire.push(model);
@@ -167,23 +163,39 @@ export function startGame() {
     var stOvir = ovire.length;
 
     //izvajamo zanko v neskončnost vsake 1 - 5 sekund
-    setInterval(function () {
-        //preverimo, če je število prostih ovir večje od 0
+    function spawnObstacle(callback) {
+        // Check if there are any free obstacles
         if (stProstihOvir > 0) {
-            //izberemo naključno oviro in preverimo, če je prosta
+            // Select a random obstacle and check if it's free
             var randomOvira = Math.floor(Math.random() * stOvir);
             if (ovire[randomOvira].prosta) {
-
-                //dodamo naključen timer, ki pove, čez koliko časa bomo oviro postavili na sceno - med 1 in 5 sekund in zmanjšamo število prostih ovir
-                //random timer doda "naključno z komponento"
+                // Add a random timer that tells us when to place the obstacle on the scene - between 1 and 5 seconds and reduce the number of free obstacles
+                // Random timer adds a "random component"
                 var randomTimer = Math.floor(Math.random() * 5) + 1;
                 stProstihOvir--;
                 ovire[randomOvira].prosta = false;
 
-                //dodamo varianco x koordinate, da se ovire ne postavijo v isto vrsto - med -4 in +6
+                // Add a variance to the x coordinate so that the obstacles are not placed in the same row - between -4 and +6
                 var randomX = Math.random() * 10 - 4;
 
-                //timer uporabimo v LinearAnimatorju startTime
+                // Check if there is already a coin or obstacle at that position
+                for (var i = 0; i < coins.length; i++) {
+                    if (coins[i].getComponentOfType(Transform).translation[0] === randomX) {
+                        // If there is a coin at that position, generate a new position and check again
+                        randomX = Math.random() * 10 - 4;
+                        i = -1;
+                    }
+                }
+
+                for (var i = 0; i < ovire.length; i++) {
+                    if (ovire[i].getComponentOfType(Transform).translation[0] === randomX) {
+                        // If there is an obstacle at that position, generate a new position and check again
+                        randomX = Math.random() * 10 - 4;
+                        i = -1;
+                    }
+                }
+
+                // Use the timer in the LinearAnimator startTime
                 ovire[randomOvira].addComponent(new LinearAnimator(ovire[randomOvira], {
                     startPosition: [
                         prviXYZ[0] + randomX,
@@ -199,33 +211,33 @@ export function startGame() {
                     loop: false,
                     startTime: randomTimer,
                 }));
-                //ko je ovira na koncu poti, ji odstranimo animator in jo postavimo na začetni položaj
+                // When the obstacle is at the end of the path, we remove the animator and place it at the starting position
                 setTimeout(function () {
                     ovire[randomOvira].removeComponent(LinearAnimator);
                     ovire[randomOvira].getComponentOfType(Transform).translation = ovire[randomOvira].zacetniXYZ;
-                    // console.log(ovire[randomOvira].getComponentOfType(Transform).translation); // Check the value immediately after setting it
                     ovire[randomOvira].prosta = true;
                     stProstihOvir++;
+                    callback();
                 }, 10000 + randomTimer * 1000 + 1000);
             }
-            else {
-                //če ovira ni prosta, ponovimo zanko
-                // console.log("ovira ni prosta");
-                return;
-            }
         }
-        else {
-            //če ni prostih ovir, ponovimo zanko
-            return;
-        }
-    }, 1000 * (Math.floor(Math.random() * 5) + 1));
+    }
+
+    function continueSpawningObstacles() {
+        var randomInterval = 1000 * (Math.floor(Math.random() * 5) + 1);
+        spawnObstacle(function () {
+            // Code to be executed after spawnObstacle completes
+        });
+        setTimeout(continueSpawningObstacles, randomInterval);
+    }
+
+    continueSpawningObstacles();
 
     //////////////////// Konec sistema ovir ////////////////////
 
     //////////////////// Sistem Coinov ////////////////////
 
     // modeli coinov
-    const coins = [];
     models.forEach((model) => {
         if (model.name.includes("Coin")) {
             coins.push(model);
@@ -270,8 +282,7 @@ export function startGame() {
     var stCoinov = coins.length;
     var izbranCoin = 0;
 
-    //izvajamo zanko v neskončnost vsake 1 - 5 sekund
-    setInterval(function () {
+    function spawnCoin(callback) {
         if (izbranCoin == stCoinov) {
             izbranCoin = 0;
         }
@@ -283,12 +294,30 @@ export function startGame() {
                 // console.log("coin " + izbranCoin + " je prost")
                 //dodamo naključen timer, ki pove, čez koliko časa bomo oviro postavili na sceno - med 1 in 5 sekund in zmanjšamo število prostih ovir
                 //random timer doda "naključno z komponento"
-                var randomTimer = Math.floor(Math.random() * 5) + 1;
+                //var randomTimer = Math.floor(Math.random() * 5) + 1;
+
                 stProstihCoinov--;
                 coins[izbranCoin].prost = false;
 
                 //dodamo varianco x koordinate, da se ovire ne postavijo v isto vrsto - med -4 in +6
                 var randomX = Math.random() * 10 - 4;
+
+                // Check if there is already a coin or obstacle at that position
+                for (var i = 0; i < coins.length; i++) {
+                    if (coins[i].getComponentOfType(Transform).translation[0] === randomX) {
+                        // If there is a coin at that position, generate a new position and check again
+                        randomX = Math.random() * 10 - 4;
+                        i = -1;
+                    }
+                }
+
+                for (var i = 0; i < ovire.length; i++) {
+                    if (ovire[i].getComponentOfType(Transform).translation[0] === randomX) {
+                        // If there is an obstacle at that position, generate a new position and check again
+                        randomX = Math.random() * 10 - 4;
+                        i = -1;
+                    }
+                }
 
                 //timer uporabimo v LinearAnimatorju startTime
                 coins[izbranCoin].addComponent(new LinearAnimator(coins[izbranCoin], {
@@ -304,7 +333,7 @@ export function startGame() {
                     ],
                     duration: 10,
                     loop: false,
-                    startTime: randomTimer,
+                    startTime: 0,
                 }));
                 //ko je coin na koncu poti, mu odstranimo animator in ga postavimo na začetni položaj
                 var currentCoin = izbranCoin;
@@ -314,7 +343,7 @@ export function startGame() {
                     // console.log(coins[currentCoin].getComponentOfType(Transform).translation); // Check the value immediately after setting it
                     coins[currentCoin].prost = true;
                     stProstihCoinov++;
-                }, 10000 + randomTimer * 1000 + 1000);
+                }, 10000 + 1000);
                 izbranCoin++;
             }
             else {
@@ -327,14 +356,30 @@ export function startGame() {
             //če ni prostih coinov, ponovimo zanko
             return;
         }   //timeout nastavimo med 1 in 5 sekundami
-    }, 1000 * (Math.floor(Math.random() * 5) + 1));
+
+        // Assuming spawnCoin is an asynchronous operation (e.g., with animations)
+        // Call the callback function when the operation is complete
+        setTimeout(function () {
+            callback();
+        }, 10000 + 1000 /* Time needed for the operation to complete */);
+    }
+
+    function continueSpawning() {
+        var randomInterval = 1000 * (Math.floor(Math.random() * 5) + 1);
+        spawnCoin(function () {
+            // Code to be executed after spawnCoin completes
+        });
+        setTimeout(continueSpawning, randomInterval);
+    }
+
+    continueSpawning();
 
     //////////////////// Konec sistema coinov ////////////////////
 
     // Bike
     const bike = gltfLoader.loadNode("Bike");
     bike.addComponent(new FirstPersonController(bike, document.body, {
-        dev: false,
+        dev: true,
         maxSpeed: 25,
         // pitch: -0.3,
     }));
