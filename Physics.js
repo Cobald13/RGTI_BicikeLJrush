@@ -1,6 +1,7 @@
 import { vec3, mat4 } from "./lib/gl-matrix-module.js"
 import { getGlobalModelMatrix } from './common/engine/core/SceneUtils.js';
 import { Transform } from './common/engine/core.js';
+import { handleCollision } from "./main.js";
 
 export class Physics {
 
@@ -66,8 +67,7 @@ export class Physics {
         }
 
         if (isColliding) {
-            // console.log("Collision!");
-            // console.log(a.name, b.name);
+            handleCollision(a, b);
         }
 
         // Move node A minimally to avoid collision.

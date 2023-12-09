@@ -1,3 +1,5 @@
+import { startTime } from "../../../main.js";
+
 export class UpdateSystem {
 
     constructor(application) {
@@ -15,7 +17,7 @@ export class UpdateSystem {
 
         this.application.start?.();
 
-        this._time = performance.now() / 1000;
+        this._time = (performance.now() - startTime) / 1000;
 
         this._updateFrame = setInterval(this._update, 0);
         this._renderFrame = requestAnimationFrame(this._render);
@@ -33,7 +35,7 @@ export class UpdateSystem {
     }
 
     _update() {
-        const time = performance.now() / 1000;
+        const time = (performance.now() - startTime) / 1000;
         const dt = time - this._time;
         this._time = time;
 
