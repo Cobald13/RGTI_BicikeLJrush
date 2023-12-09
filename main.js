@@ -187,8 +187,10 @@ export function startGame() {
                     }
                 }
 
+                var threshold = 0.5; // Adjust this value as needed
+
                 for (var i = 0; i < ovire.length; i++) {
-                    if (ovire[i].getComponentOfType(Transform).translation[0] === randomX) {
+                    if (Math.abs(ovire[i].getComponentOfType(Transform).translation[0] - randomX) < threshold) {
                         // If there is an obstacle at that position, generate a new position and check again
                         randomX = Math.random() * 10 - 4;
                         i = -1;
@@ -199,12 +201,12 @@ export function startGame() {
                 ovire[randomOvira].addComponent(new LinearAnimator(ovire[randomOvira], {
                     startPosition: [
                         prviXYZ[0] + randomX,
-                        prviXYZ[1] + 1,
+                        ovire[randomOvira].getComponentOfType(Transform).translation[1],
                         prviXYZ[2]
                     ],
                     endPosition: [
                         prviXYZ[0] + randomX,
-                        prviXYZ[1] + 1,
+                        ovire[randomOvira].getComponentOfType(Transform).translation[1],
                         prviXYZ[2] + 5 * dolzinaBloka
                     ],
                     duration: 10,
