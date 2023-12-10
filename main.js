@@ -187,78 +187,40 @@ export function startGame() {
 
     //////////////////// Sistem ovir ////////////////////
 
-
-    //izvajamo zanko v neskončnost vsake 1 - 5 sekund
-    function spawnObstacle(callback) {
-        // Check if there are any free obstacles
-        if (stProstihOvir > 0) {
-            // Select a random obstacle and check if it's free
-            var randomOvira = Math.floor(Math.random() * stOvir);
-            if (ovire[randomOvira].prosta) {
-                // Add a random timer that tells us when to place the obstacle on the scene - between 1 and 5 seconds and reduce the number of free obstacles
-                // Random timer adds a "random component"
-                var randomTimer = Math.floor(Math.random() * 5) + 1;
-                stProstihOvir--;
-                ovire[randomOvira].prosta = false;
-
-                // Add a variance to the x coordinate so that the obstacles are not placed in the same row - between -4 and +6
-                var randomX = Math.random() * 8 - 4;
-
-                // Check if there is already a coin or obstacle at that position
-                for (var i = 0; i < coins.length; i++) {
-                    if (coins[i].getComponentOfType(Transform).translation[0] === randomX) {
-                        // If there is a coin at that position, generate a new position and check again
-                        randomX = Math.random() * 8 - 4;
-                        i = -1;
-                    }
-                }
-
-                var threshold = 0.5;
-
-                for (var i = 0; i < ovire.length; i++) {
-                    if (Math.abs(ovire[i].getComponentOfType(Transform).translation[0] - randomX) < threshold) {
-                        // If there is an obstacle at that position, generate a new position and check again
-                        randomX = Math.random() * 8 - 4;
-                        i = -1;
-                    }
-                }
-
-                // Use the timer in the LinearAnimator startTime
-                ovire[randomOvira].addComponent(new LinearAnimator(ovire[randomOvira], {
-                    startPosition: [
-                        prviXYZ[0] + randomX,
-                        ovire[randomOvira].getComponentOfType(Transform).translation[1],
-                        prviXYZ[2]
-                    ],
-                    endPosition: [
-                        prviXYZ[0] + randomX,
-                        ovire[randomOvira].getComponentOfType(Transform).translation[1],
-                        prviXYZ[2] + 5 * dolzinaBloka
-                    ],
-                    duration: 10,
-                    loop: false,
-                    startTime: randomTimer,
-                }));
-                // When the obstacle is at the end of the path, we remove the animator and place it at the starting position
-                setTimeout(function () {
-                    ovire[randomOvira].removeComponent(LinearAnimator);
-                    ovire[randomOvira].getComponentOfType(Transform).translation = ovire[randomOvira].zacetniXYZ;
-                    ovire[randomOvira].prosta = true;
-                    stProstihOvir++;
-                    callback();
-                }, 10000 + randomTimer * 1000 + 1000);
+    function spawnObstacle() {
+        var chosenObstacle;
+        var freeObstacles = [];
+        ovire.forEach(ovira => {
+            if (ovira.prosta) {
+                freeObstacles.push(ovira);
             }
-        }
-    }
-
-    function continueSpawningObstacles() {
-        var randomInterval = 1000 * (Math.floor(Math.random() * 5) + 1);
-        spawnObstacle(function () {
         });
-        setTimeout(continueSpawningObstacles, randomInterval);
-    }
+        var random = Math.floor(Math.random() * freeObstacles.length);
+        chosenObstacle = freeObstacles[random];
 
-    continueSpawningObstacles();
+        if (!chosenObstacle) return;
+
+        chosenObstacle.prosta = false
+
+        // Select random x coordinate [-4, 4)        
+        var randomX = Math.random() * 8 - 4;
+
+        chosenObstacle.addComponent(new LinearAnimator(chosenObstacle, {
+            startPosition: [
+                prviXYZ[0] + randomX,
+                chosenObstacle.getComponentOfType(Transform).translation[1],
+                prviXYZ[2]
+            ],
+            endPosition: [
+                prviXYZ[0] + randomX,
+                chosenObstacle.getComponentOfType(Transform).translation[1],
+                prviXYZ[2] + 5 * dolzinaBloka
+            ],
+            duration: GAME_SPEED,
+            loop: false,
+            startTime: 0,
+        }));
+    }
 
     //////////////////// Konec sistema ovir ////////////////////
 
@@ -303,24 +265,6 @@ export function startGame() {
 
         // Select random x coordinate [-4, 4)
         var randomX = Math.random() * 8 - 4;
-
-        // Check if there is already a coin or obstacle at that position
-        for (var i = 0; i < coins.length; i++) {
-            if (coins[i].getComponentOfType(Transform).translation[0] === randomX) {
-                console.log("PROBLEM:", coins[i]);
-                // If there is a coin at that position, generate a new position and check again
-                var randomX = Math.random() * 8 - 4;
-                i = -1;
-            }
-        }
-        for (var i = 0; i < ovire.length; i++) {
-            if (ovire[i].getComponentOfType(Transform).translation[0] === randomX) {
-                console.log("PROBLEM:", ovire[i]);
-                // If there is an obstacle at that position, generate a new position and check again
-                randomX = Math.random() * 10 - 4;
-                i = -1;
-            }
-        }
 
         chosenCoin.addComponent(new LinearAnimator(chosenCoin, {
             startPosition: [
@@ -445,15 +389,17 @@ export function startGame() {
     });
 
 
-    let lastExecutionTime = 0;
+    let lastExecutionTimeCoins = 0;
+    let lastExecutionTimeObstacles = 0;
+    let timeFromLastSpawn = 0;
     const physics = new Physics(scene);
     const timeElement = document.getElementById("time");
     function update(time, dt) {
         timeElement.textContent = `Time: ${Math.floor(time)}`;
 
-        // Check if 2 seconds have passed since the last execution
-        if (Math.floor(time) - lastExecutionTime >= 2) {
-            // console.log(time);
+        // Check if 2 seconds have passed since the last coin spawn
+        if (Math.floor(time) - lastExecutionTimeCoins >= 2) {
+            // console.log("Spawning coin", time);
 
             // Check for any coins with old linear animators to be made available
             coins.forEach(coin => {
@@ -462,12 +408,27 @@ export function startGame() {
                     coin.removeComponent(linearAnimator);
                     coin.prost = true;
                 }
-                // console.log(coin.prost);
             });
             spawnCoin();
+            timeFromLastSpawn = 0;
+            lastExecutionTimeCoins = Math.floor(time); // Update the last execution time
+        } else if (Math.floor(time) - lastExecutionTimeObstacles >= 3 && (timeFromLastSpawn > 1)) {
+            // console.log("Spawning ovire", time);
 
-            lastExecutionTime = Math.floor(time); // Update the last execution time
+            ovire.forEach(ovira => {
+                const linearAnimator = ovira.getComponentOfType(LinearAnimator);
+                if (linearAnimator && linearAnimator.timeElapsed > 13) {
+                    ovira.removeComponent(linearAnimator);
+                    ovira.prosta = true;
+                }
+                // console.log(ovira.prosta);
+            });
+
+            spawnObstacle();
+            lastExecutionTimeObstacles = Math.floor(time);
         }
+
+        timeFromLastSpawn += dt;
 
         scene.traverse(node => {
             for (const component of node.components) {
@@ -564,7 +525,6 @@ function gameOver() {
     // Display game over screen
     const gameOverScreenElement = document.getElementById("game-over");
     if (gameOverScreenElement) {
-        console.log(gameOverScreenElement);
         gameOverScreenElement.style.display = "flex";
     }
 
@@ -598,7 +558,6 @@ models.forEach((model) => {
 export function handleCollision(a, b) {
     const collidedObject = a.name === "Bike" ? b : a;
     if (collidedObject.name.includes("Coin")) {
-        console.log(collidedObject);
         coinMusic();
         score.pickCoin();
         updateCoinsPickedDisplay();
