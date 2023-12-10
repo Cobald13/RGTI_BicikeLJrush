@@ -1,9 +1,7 @@
 import { ResizeSystem } from './common/engine/systems/ResizeSystem.js';
 import { UpdateSystem } from './common/engine/systems/UpdateSystem.js';
 
-import { OrbitController } from './common/engine/controllers/OrbitController.js';
 import { FirstPersonController } from './common/engine/controllers/FirstPersonController.js';
-import { TurntableController } from './common/engine/controllers/TurntableController.js';
 import { RotateAnimator } from './common/engine/animators/RotateAnimator.js';
 
 import { GLTFLoader } from './common/engine/loaders/GLTFLoader.js';
@@ -26,7 +24,6 @@ import {
     Node,
     Transform,
 } from './common/engine/core.js';
-import { MiddleStepAnimator } from './common/engine/animators/MiddleStepAnimator.js';
 import { MiddleStepRotateAnimator } from './common/engine/animators/MiddleStepRotateAnimator.js';
 
 import { ScoringSystem } from './ScoringSystem.js'
@@ -79,15 +76,6 @@ const prviXYZ = prviBlok.getComponentOfType(Transform).translation.slice();
 const dolzinaBloka = prviBlok.getComponentOfType(Transform).translation[2] - models.find(obj => obj.name === "Landscape.002").getComponentOfType(Transform).translation[2];
 const coins = [];
 const ovire = [];
-
-const light = new Node();
-light.addComponent(new Transform({
-    translation: [3, 3, 3],
-}));
-light.addComponent(new Light({
-    ambient: 0.5,
-}));
-scene.addChild(light);
 
 // modeli ovir
 models.forEach((model) => {
@@ -183,21 +171,17 @@ export function startGame() {
 
     //////////////////// Luči ////////////////////
 
-    light.addComponent(new LinearAnimator(light, {
-        //začetna lokacija je lokacija luči z imenom Luč.002
-        startPosition: [
-            models.find(obj => obj.name === "Luč.002").getComponentOfType(Transform).translation[0],
+    const light = new Node();
+    light.addComponent(new Transform({
+        translation: [
+            models.find(obj => obj.name === "Luč.002").getComponentOfType(Transform).translation[0] + 60,
             models.find(obj => obj.name === "Luč.002").getComponentOfType(Transform).translation[1] + 2,
-            models.find(obj => obj.name === "Luč.002").getComponentOfType(Transform).translation[2] - 8
-        ],
-        endPosition: [
-            models.find(obj => obj.name === "Luč.002").getComponentOfType(Transform).translation[0],
-            models.find(obj => obj.name === "Luč.002").getComponentOfType(Transform).translation[1] + 2,
-            models.find(obj => obj.name === "Luč.002").getComponentOfType(Transform).translation[2] - 8 + dolzinaBloka
-        ],
-        duration: 2,
-        loop: true,
+            models.find(obj => obj.name === "Luč.002").getComponentOfType(Transform).translation[2] - 8],
     }));
+    light.addComponent(new Light({
+        ambient: 0.5,
+    }));
+    scene.addChild(light);
 
     //////////////////// Konec luči ////////////////////
 
@@ -466,7 +450,7 @@ export function startGame() {
     const timeElement = document.getElementById("time");
     function update(time, dt) {
         timeElement.textContent = `Time: ${Math.floor(time)}`;
-        
+
         // Check if 2 seconds have passed since the last execution
         if (Math.floor(time) - lastExecutionTime >= 2) {
             // console.log(time);
@@ -484,7 +468,7 @@ export function startGame() {
 
             lastExecutionTime = Math.floor(time); // Update the last execution time
         }
-    
+
         scene.traverse(node => {
             for (const component of node.components) {
                 component.update?.(time, dt);
@@ -558,7 +542,7 @@ function gameOver() {
     pauseGame();
     score.endGame();
     const finalScore = score.calculateScore();
-    
+
     // Display coins picked
     const gameOverCoinsElement = document.getElementById("gameOverCoins");
     if (gameOverCoinsElement) {
@@ -583,7 +567,7 @@ function gameOver() {
         console.log(gameOverScreenElement);
         gameOverScreenElement.style.display = "flex";
     }
-    
+
     console.log(`Score: ${finalScore}, Coins: ${score.coinsPicked}`);
     score.reset();
 }
