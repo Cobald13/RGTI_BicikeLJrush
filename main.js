@@ -111,6 +111,7 @@ export function startGame() {
 
     score.startGame();
 
+    // Hide start game screen
     document.getElementById("start-game").style.display = "none";
     // Display game-ui
     const gameUIElement = document.getElementById("game-ui");
@@ -119,7 +120,6 @@ export function startGame() {
     }
 
     startTime = performance.now();
-
 
     var delayIndex = 0;
     scena.forEach((model) => {
