@@ -546,7 +546,7 @@ function gameOver() {
     // Display coins picked
     const gameOverCoinsElement = document.getElementById("gameOverCoins");
     if (gameOverCoinsElement) {
-        const coinImage = '<img src="/common/assets/ui/coin.png" alt="Coin" style="height: 1em; margin-right: 5px;">';
+        const coinImage = '<img src="/common/assets/ui/coin.png" alt="Coin">';
         gameOverCoinsElement.innerHTML = `${coinImage} ${score.coinsPicked}`;
     }
     // Display score
