@@ -1,14 +1,24 @@
 export class Node {
 
-    constructor() {
+    constructor(name, zacetniXYZ) {
         this.children = [];
         this.parent = null;
         this.components = [];
-        this.name = [];
+        this.name = name;
+        this._zacetniXYZ = zacetniXYZ;
     }
 
     setName(name) {
         this.name = name;
+    }
+
+    set zacetniXYZ(value) {
+        // Ignore attempts to set the value
+        console.warn("Cannot modify readonly property zacetniXYZ");
+    }
+
+    get zacetniXYZ() {
+        return this._zacetniXYZ;
     }
 
     addChild(node) {

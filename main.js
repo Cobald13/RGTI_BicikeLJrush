@@ -87,7 +87,7 @@ models.forEach((model) => {
         //oviram dodamo boolean, ki pove, če je ovira trenutno prosta za uporabo
         ovire[ovire.length - 1].prosta = true;
         //oviram dodamo atribut, ki pove njen začetni položaj
-        ovire[ovire.length - 1].zacetniXYZ = model.getComponentOfType(Transform).translation.slice();
+        // ovire[ovire.length - 1].zacetniXYZ = model.getComponentOfType(Transform).translation.slice();
     }
 });
 
@@ -102,6 +102,7 @@ bike.addComponent(new FirstPersonController(bike, document.body, {
     maxSpeed: 25,
 }));
 
+const GAME_SPEED = 10;
 
 document.getElementById('main-menu').style.opacity = '0.5';
 export let startTime;
@@ -126,7 +127,7 @@ export function startGame() {
                     model.getComponentOfType(Transform).translation[2] +
                     5 * dolzinaBloka
                 ],
-                duration: 10,
+                duration: GAME_SPEED,
                 startTime: 0,
                 loop: false,
             }));
@@ -148,7 +149,7 @@ export function startGame() {
                     prviBlok.getComponentOfType(Transform).translation[2] +
                     5 * dolzinaBloka
                 ],
-                duration: 10,
+                duration: GAME_SPEED,
                 startTime: delayIndex * 2,
                 loop: true,
             }));
@@ -265,7 +266,8 @@ export function startGame() {
             //coinom dodamo boolean, ki pove, če je coin trenutno prosta za uporabo
             coins[coins.length - 1].prost = true;
             //coinom dodamo atribut, ki pove njen začetni položaj
-            coins[coins.length - 1].zacetniXYZ = model.getComponentOfType(Transform).translation.slice();
+            // coins[coins.length - 1].zacetniXYZ = model.getComponentOfType(Transform).translation.slice();
+            // coins[coins.length - 1].zacetniXYZ = JSON.parse(JSON.stringify(model.getComponentOfType(Transform).translation));
             // model.zacetniXYZ = model.getComponentOfType(Transform).translation.slice(); // pomojem to bolj pravilno?
             //dodamo rotacijo
             coins[coins.length - 1].addComponent(new RotateAnimator(coins[coins.length - 1], {
@@ -299,102 +301,60 @@ export function startGame() {
             */
         }
     });
+    // console.log(coins[0], coins[0].zacetniXYZ);
 
-    stProstihCoinov = coins.length;
-    var stCoinov = coins.length;
-    var izbranCoin = 0;
+    // Spawn first available coin & add LinearAnimator
+    function spawnCoin() {
 
-    function spawnCoin(callback) {
-        if (izbranCoin == stCoinov) {
-            izbranCoin = 0;
-        }
-        //preverimo, če je število prostih coinov večje od 0
-        if (stProstihCoinov > 0) {
-            //izberemo prvi coin v arrayu in preverimo, če je prost
-            //če ni prost, izberemo naslednjega, dokler ni izbran prost coin
-            if (izbranCoin < stCoinov && coins[izbranCoin].prost) {
-                // console.log("coin " + izbranCoin + " je prost")
-                //dodamo naključen timer, ki pove, čez koliko časa bomo oviro postavili na sceno - med 1 in 5 sekund in zmanjšamo število prostih ovir
-                //random timer doda "naključno z komponento"
-                //var randomTimer = Math.floor(Math.random() * 5) + 1;
-
-                stProstihCoinov--;
-                coins[izbranCoin].prost = false;
-
-                //dodamo varianco x koordinate, da se ovire ne postavijo v isto vrsto - med -4 in +6
-                var randomX = Math.random() * 10 - 4;
-
-                // Check if there is already a coin or obstacle at that position
-                for (var i = 0; i < coins.length; i++) {
-                    if (coins[i].getComponentOfType(Transform).translation[0] === randomX) {
-                        // If there is a coin at that position, generate a new position and check again
-                        randomX = Math.random() * 10 - 4;
-                        i = -1;
-                    }
-                }
-
-                for (var i = 0; i < ovire.length; i++) {
-                    if (ovire[i].getComponentOfType(Transform).translation[0] === randomX) {
-                        // If there is an obstacle at that position, generate a new position and check again
-                        randomX = Math.random() * 10 - 4;
-                        i = -1;
-                    }
-                }
-
-                //timer uporabimo v LinearAnimatorju startTime
-                coins[izbranCoin].addComponent(new LinearAnimator(coins[izbranCoin], {
-                    startPosition: [
-                        prviXYZ[0] + randomX,
-                        prviXYZ[1] + 1.2,
-                        prviXYZ[2]
-                    ],
-                    endPosition: [
-                        prviXYZ[0] + randomX,
-                        prviXYZ[1] + 1.2,
-                        prviXYZ[2] + 5 * dolzinaBloka
-                    ],
-                    duration: 10,
-                    loop: false,
-                    startTime: 0,
-                }));
-                //ko je coin na koncu poti, mu odstranimo animator in ga postavimo na začetni položaj
-                var currentCoin = izbranCoin;
-                setTimeout(function () {
-                    coins[currentCoin].removeComponent(LinearAnimator);
-                    coins[currentCoin].getComponentOfType(Transform).translation = coins[currentCoin].zacetniXYZ;
-                    // console.log(coins[currentCoin].getComponentOfType(Transform).translation); // Check the value immediately after setting it
-                    coins[currentCoin].prost = true;
-                    stProstihCoinov++;
-                }, 10000 + 1000);
-                izbranCoin++;
+        // Select first available coin
+        var chosenCoin;
+        coins.forEach(coin => {
+            if (coin.prost) {
+                chosenCoin = coin;
+                return;
             }
-            else {
-                //če coin ni prost, izberemo naslednjega
-                // console.log("coin " + izbranCoin + " ni prost");
-                izbranCoin++;
-            }
-        }
-        else {
-            //če ni prostih coinov, ponovimo zanko
-            return;
-        }   //timeout nastavimo med 1 in 5 sekundami
-
-        // Assuming spawnCoin is an asynchronous operation (e.g., with animations)
-        // Call the callback function when the operation is complete
-        setTimeout(function () {
-            callback();
-        }, 10000 + 1000 /* Time needed for the operation to complete */);
-    }
-
-    function continueSpawning() {
-        var randomInterval = 1000 * (Math.floor(Math.random() * 5) + 1);
-        spawnCoin(function () {
-            // Code to be executed after spawnCoin completes
         });
-        setTimeout(continueSpawning, randomInterval);
+        chosenCoin.prost = false;
+
+        // Select random x coordinate [-4, 4)
+        var randomX = Math.random() * 8 - 4;
+
+        // Check if there is already a coin or obstacle at that position
+        for (var i = 0; i < coins.length; i++) {
+            if (coins[i].getComponentOfType(Transform).translation[0] === randomX) {
+                console.log("PROBLEM:", coins[i]);
+                // If there is a coin at that position, generate a new position and check again
+                var randomX = Math.random() * 8 - 4;
+                i = -1;
+            }
+        }
+        for (var i = 0; i < ovire.length; i++) {
+            if (ovire[i].getComponentOfType(Transform).translation[0] === randomX) {
+                console.log("PROBLEM:", ovire[i]);
+                // If there is an obstacle at that position, generate a new position and check again
+                randomX = Math.random() * 10 - 4;
+                i = -1;
+            }
+        }
+
+        chosenCoin.addComponent(new LinearAnimator(chosenCoin, {
+            startPosition: [
+                prviXYZ[0] + randomX,
+                prviXYZ[1] + 1.2,
+                prviXYZ[2]
+            ],
+            endPosition: [
+                prviXYZ[0] + randomX,
+                prviXYZ[1] + 1.2,
+                prviXYZ[2] + 5 * dolzinaBloka
+            ],
+            duration: GAME_SPEED,
+            loop: false,
+            startTime: 0,
+        }));
     }
 
-    continueSpawning();
+
 
     //////////////////// Konec sistema coinov ////////////////////
 
@@ -492,7 +452,6 @@ export function startGame() {
     });
 
     ovire.forEach(ovira => {
-        console.log(ovira.name);
         ovira.isStatic = true;
     });
 
@@ -516,10 +475,30 @@ export function startGame() {
     });
 
 
+    let lastExecutionTime = 0;
     const physics = new Physics(scene);
     const timeElement = document.getElementById("time");
     function update(time, dt) {
         timeElement.textContent = `Time: ${Math.floor(time)}`;
+        
+        // Check if 2 seconds have passed since the last execution
+        if (Math.floor(time) - lastExecutionTime >= 2) {
+            // console.log(time);
+
+            // Check for any coins with old linear animators to be made available
+            coins.forEach(coin => {
+                const linearAnimator = coin.getComponentOfType(LinearAnimator);
+                if (linearAnimator && linearAnimator.timeElapsed > 13) {
+                    coin.removeComponent(linearAnimator);
+                    coin.prost = true;
+                }
+                // console.log(coin.prost);
+            });
+            spawnCoin();
+
+            lastExecutionTime = Math.floor(time); // Update the last execution time
+        }
+    
         scene.traverse(node => {
             for (const component of node.components) {
                 component.update?.(time, dt);
@@ -549,13 +528,16 @@ export function updateCoinsPickedDisplay() {
 }
 
 function resetCoin(coin) {
-    coin.getComponentOfType(Transform).translation = coin.zacetniXYZ;
+    // Move coin behind bike
+    coin.getComponentOfType(Transform).translation[2] = 25;
+
+    // Remove LinearAnimator
     const linearAnimator = coin.getComponentOfType(LinearAnimator);
     coin.removeComponent(linearAnimator);
-    const rotateAnimator = coin.getComponentOfType(RotateAnimator);
-    coin.removeComponent(rotateAnimator);
     coin.prost = true;
-    stProstihCoinov++;
+
+    // const rotateAnimator = coin.getComponentOfType(RotateAnimator);
+    // coin.removeComponent(rotateAnimator);
 }
 
 export function handleCollision(a, b) {
