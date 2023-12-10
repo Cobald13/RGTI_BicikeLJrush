@@ -15,17 +15,24 @@
         <div id="main-menu">
             <h1>BicikeLJ rush</h1>
             <button onclick="startGame()">Play</button>
-            <button id="restart-button">Restart</button>
+            <button onclick="restartGame()">Restart</button>
+            <button onclick="pauseGame()">Pause</button>
+            <button onclick="resumeGame()">Resume</button>
             <div>
                 <p id="coinsPicked">Coins Picked: 0</p>
                 <p id="time">Time: 0</p>
+                <p id="gameOverScore"></p>
             </div>
         </div>
     </div>
     <script type="module">
-        import { startGame } from './main.js';
+        import { startGame, restartGame, pauseGame, resumeGame } from './main.js';
 
-        window.startGame = startGame; // Make the function available globally
+        // Make the functions available globally
+        window.startGame = startGame;
+        window.restartGame = restartGame;
+        window.pauseGame = pauseGame;
+        window.resumeGame = resumeGame;
     </script>
 </body>
 

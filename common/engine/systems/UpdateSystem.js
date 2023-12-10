@@ -14,6 +14,7 @@ export class UpdateSystem {
         if (this.running) {
             return;
         }
+        this.running = true;
 
         this.application.start?.();
 
@@ -27,6 +28,7 @@ export class UpdateSystem {
         if (!this.running) {
             return;
         }
+        this.running = false;
 
         this.application.stop?.();
 

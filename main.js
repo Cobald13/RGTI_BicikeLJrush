@@ -103,10 +103,12 @@ bike.addComponent(new FirstPersonController(bike, document.body, {
 }));
 
 const GAME_SPEED = 10;
+var updateSystem;
 
 document.getElementById('main-menu').style.opacity = '0.5';
 export let startTime;
 export function startGame() {
+    score.startGame();
     // document.getElementById('main-menu').style.display = 'none';
     startTime = performance.now();
 
@@ -314,6 +316,8 @@ export function startGame() {
                 return;
             }
         });
+        if (!chosenCoin) return;
+
         chosenCoin.prost = false;
 
         // Select random x coordinate [-4, 4)
@@ -517,7 +521,8 @@ export function startGame() {
     }
 
     new ResizeSystem({ canvas, resize }).start();
-    new UpdateSystem({ update, render }).start();
+    updateSystem = new UpdateSystem({ update, render });
+    updateSystem.start();
 }
 
 export function updateCoinsPickedDisplay() {
@@ -533,11 +538,51 @@ function resetCoin(coin) {
 
     // Remove LinearAnimator
     const linearAnimator = coin.getComponentOfType(LinearAnimator);
-    coin.removeComponent(linearAnimator);
-    coin.prost = true;
+    if (linearAnimator) {
+        coin.removeComponent(linearAnimator);
+        coin.prost = true;
+    }
 
     // const rotateAnimator = coin.getComponentOfType(RotateAnimator);
     // coin.removeComponent(rotateAnimator);
+}
+
+export function pauseGame() {
+    updateSystem.stop();
+}
+
+export function resumeGame() {
+    updateSystem.start();
+}
+
+function gameOver() {
+    pauseGame();
+    score.endGame();
+    const finalScore = score.calculateScore();
+    
+    const gameOverScoreElement = document.getElementById("gameOverScore");
+    if (gameOverScoreElement) {
+        gameOverScoreElement.textContent = `Score: ${finalScore}, Coins: ${score.coinsPicked}`;
+    }
+    
+    console.log(`Score: ${finalScore}, Coins: ${score.coinsPicked}`);
+    score.reset();
+}
+
+
+// Check if the page was reloaded
+if (localStorage.getItem('reloadFlag')) {
+    // Clear the flag
+    localStorage.removeItem('reloadFlag');
+
+    startGame();
+}
+
+export function restartGame() {
+    // Set the flag before reloading
+    localStorage.setItem('reloadFlag', 'true');
+
+    location.reload();
 }
 
 export function handleCollision(a, b) {
@@ -549,5 +594,6 @@ export function handleCollision(a, b) {
         resetCoin(collidedObject);
     } else if (collidedObject.name.includes("Ovira")) {
         console.log("GAME OVER");
+        gameOver();
     }
 }
