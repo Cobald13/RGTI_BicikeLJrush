@@ -3,6 +3,8 @@ export class ScoringSystem {
         this.coinsPicked = 0;
         this.startTime = 0;
         this.endTime = 0;
+        this.timeBonus = 100;
+        this.coinBonus = 50;
     }
 
     startGame() {
@@ -19,12 +21,9 @@ export class ScoringSystem {
 
     calculateScore() {
         const elapsedSeconds = (this.endTime - this.startTime) / 1000; // Convert milliseconds to seconds
-        const timeBonus = 1000; // Adjust this value as needed
+        const score = (elapsedSeconds * this.timeBonus) + (this.coinsPicked * this.coinBonus);
 
-        // Score formula: Number of coins picked * time bonus
-        const score = this.coinsPicked * timeBonus;
-
-        return score;
+        return Math.round(score);
     }
 
     reset() {
@@ -33,23 +32,3 @@ export class ScoringSystem {
         this.endTime = 0;
     }
 }
-
-// // Example Usage:
-// const scoringSystem = new ScoringSystem();
-
-// // Start the game
-// scoringSystem.startGame();
-
-// // Player picks a coin
-// scoringSystem.pickCoin();
-
-// // ... (Continue picking coins and playing the game)
-
-// // End the game
-// scoringSystem.endGame();
-
-// // Calculate and retrieve the final score
-// const finalScore = scoringSystem.calculateScore();
-
-// // Reset the scoring system for a new game
-// scoringSystem.reset();
