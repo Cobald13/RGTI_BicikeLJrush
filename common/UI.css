@@ -2,11 +2,6 @@
     font-size: 2em;
 }
 
-#game-ui button {
-    padding: 10px 20px;
-    font-size: 1.2em;
-}
-
 #game-ui {
     position: absolute;
     top: 10px;
@@ -18,6 +13,20 @@
     font-family: Arial, sans-serif;
     color: #000;
     display: none;
+}
+
+#togglePauseButton {
+    width: 50px;
+    height: 50px;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+#togglePauseButton img {
+    width: 100%;
+    height: 100%;
 }
 
 #start-game {

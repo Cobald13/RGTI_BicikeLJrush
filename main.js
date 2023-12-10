@@ -514,7 +514,8 @@ export function startGame() {
 export function updateCoinsPickedDisplay() {
     const coinsPickedElement = document.getElementById("coinsPicked");
     if (coinsPickedElement) {
-        coinsPickedElement.textContent = `Coins Picked: ${score.coinsPicked}`;
+        const coinImage = '<img src="/common/assets/ui/coin.png" alt="Coin" style="height: 1em; margin-right: 5px;">';
+        coinsPickedElement.innerHTML = `${coinImage} ${score.coinsPicked}`;
     }
 }
 
@@ -538,11 +539,23 @@ export function pauseGame() {
     pauseMusic();
 }
 
-
-
 export function resumeGame() {
     updateSystem.start();
     playMusic();
+}
+
+var isPaused = false;
+export function togglePause() {
+    isPaused = !isPaused;
+    const pauseButton = document.getElementById("togglePauseButton");
+
+    if (isPaused) {
+        pauseButton.innerHTML = '<img src="/common/assets/ui/play.png" alt="Resume">';
+        pauseGame();
+    } else {
+        pauseButton.innerHTML = '<img src="/common/assets/ui/pause.png" alt="Pause">';
+        resumeGame();
+    }
 }
 
 function gameOver() {
@@ -550,9 +563,16 @@ function gameOver() {
     score.endGame();
     const finalScore = score.calculateScore();
     
+    // Display coins picked
+    const gameOverCoinsElement = document.getElementById("gameOverCoins");
+    if (gameOverCoinsElement) {
+        const coinImage = '<img src="/common/assets/ui/coin.png" alt="Coin" style="height: 1em; margin-right: 5px;">';
+        gameOverCoinsElement.innerHTML = `${coinImage} ${score.coinsPicked}`;
+    }
+    // Display score
     const gameOverScoreElement = document.getElementById("gameOverScore");
     if (gameOverScoreElement) {
-        gameOverScoreElement.textContent = `Score: ${finalScore}, Coins: ${score.coinsPicked}`;
+        gameOverScoreElement.textContent = `Score: ${finalScore}`;
     }
 
     // Hide game-ui
