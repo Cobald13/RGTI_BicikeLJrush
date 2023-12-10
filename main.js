@@ -33,14 +33,21 @@ import { ScoringSystem } from './ScoringSystem.js'
 
 import { playMusic, pauseMusic, crashMusic, coinMusic, audioBike, audioAmbient } from './Sound.js';
 
+// Display start screen if game wasn't restarted from end game screen
+if (!localStorage.getItem("gameRestartedFlag")) {
+    const stargGameScreenElement = document.getElementById("start-game");
+    if (stargGameScreenElement) {
+        stargGameScreenElement.style.display = "flex";
+    }
+}
+
 const canvas = document.querySelector("canvas");
 
 const renderer = new Renderer(canvas);
 await renderer.initialize();
 const gltfLoader = new GLTFLoader();
 await gltfLoader.load("common/models/scenaImport/pls.gltf");
-const score = new ScoringSystem();
-export { score };
+export const score = new ScoringSystem();
 
 const scene = gltfLoader.loadScene(gltfLoader.defaultScene);
 const camera = scene.find(node => node.getComponentOfType(Camera));
@@ -61,8 +68,8 @@ models.forEach((model) => {
 
 // sortiramo modele po imenu
 scena.sort((a, b) => {
-    const aIndex = parseInt(a.name.split('.')[1]);
-    const bIndex = parseInt(b.name.split('.')[1]);
+    const aIndex = parseInt(a.name.split(".")[1]);
+    const bIndex = parseInt(b.name.split(".")[1]);
     return aIndex - bIndex;
 });
 
@@ -106,7 +113,7 @@ bike.addComponent(new FirstPersonController(bike, document.body, {
 const GAME_SPEED = 10;
 var updateSystem;
 
-document.getElementById('main-menu').style.opacity = '0.5';
+// document.getElementById("game-ui").style.opacity = "0.5";
 export let startTime;
 export function startGame() {
 
@@ -114,7 +121,14 @@ export function startGame() {
     playMusic();
 
     score.startGame();
-    // document.getElementById('main-menu').style.display = 'none';
+
+    document.getElementById("start-game").style.display = "none";
+    // Display game-ui
+    const gameUIElement = document.getElementById("game-ui");
+    if (gameUIElement) {
+        gameUIElement.style.display = "block";
+    }
+
     startTime = performance.now();
 
 
@@ -540,22 +554,35 @@ function gameOver() {
     if (gameOverScoreElement) {
         gameOverScoreElement.textContent = `Score: ${finalScore}, Coins: ${score.coinsPicked}`;
     }
+
+    // Hide game-ui
+    const gameUIElement = document.getElementById("game-ui");
+    if (gameUIElement) {
+        gameUIElement.style.display = "none";
+    }
+
+    // Display game over screen
+    const gameOverScreenElement = document.getElementById("game-over");
+    if (gameOverScreenElement) {
+        console.log(gameOverScreenElement);
+        gameOverScreenElement.style.display = "flex";
+    }
     
     console.log(`Score: ${finalScore}, Coins: ${score.coinsPicked}`);
     score.reset();
 }
 
-// Check if the page was reloaded
-if (localStorage.getItem('reloadFlag')) {
+// If the game was restarted, automatically start the game
+if (localStorage.getItem("gameRestartedFlag")) {
     // Clear the flag
-    localStorage.removeItem('reloadFlag');
+    localStorage.removeItem("gameRestartedFlag");
 
     startGame();
 }
 
 export function restartGame() {
     // Set the flag before reloading
-    localStorage.setItem('reloadFlag', 'true');
+    localStorage.setItem("gameRestartedFlag", "true");
 
     location.reload();
 }
