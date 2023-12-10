@@ -45,6 +45,7 @@ export { score };
 const scene = gltfLoader.loadScene(gltfLoader.defaultScene);
 const camera = scene.find(node => node.getComponentOfType(Camera));
 camera.getComponentOfType(Camera).far = 100;
+camera.getComponentOfType(Camera).near = 0.05;
 
 // dobimo vse modele
 const models = scene.filter(node => node.getComponentOfType(Model));
@@ -203,13 +204,13 @@ export function startGame() {
                 ovire[randomOvira].prosta = false;
 
                 // Add a variance to the x coordinate so that the obstacles are not placed in the same row - between -4 and +6
-                var randomX = Math.random() * 10 - 4;
+                var randomX = Math.random() * 8 - 4;
 
                 // Check if there is already a coin or obstacle at that position
                 for (var i = 0; i < coins.length; i++) {
                     if (coins[i].getComponentOfType(Transform).translation[0] === randomX) {
                         // If there is a coin at that position, generate a new position and check again
-                        randomX = Math.random() * 10 - 4;
+                        randomX = Math.random() * 8 - 4;
                         i = -1;
                     }
                 }
@@ -219,7 +220,7 @@ export function startGame() {
                 for (var i = 0; i < ovire.length; i++) {
                     if (Math.abs(ovire[i].getComponentOfType(Transform).translation[0] - randomX) < threshold) {
                         // If there is an obstacle at that position, generate a new position and check again
-                        randomX = Math.random() * 10 - 4;
+                        randomX = Math.random() * 8 - 4;
                         i = -1;
                     }
                 }
@@ -418,11 +419,6 @@ export function startGame() {
     // Collision detection
     bike.isDynamic = true;
 
-    // Obstacles - static
-    gltfLoader.loadNode("Cube.000").isStatic = true;
-    gltfLoader.loadNode("Box.000").isStatic = true;
-    gltfLoader.loadNode("Monkey.000").isStatic = true;
-    
     coins.forEach(coin => {
         coin.isStatic = true;
     });
