@@ -5,34 +5,52 @@
     <meta charset="utf-8">
     <title>BicikeLJ rush</title>
     <link rel="stylesheet" href="common/style.css">
-    <link rel="stylesheet" href="common/test.css">
+    <link rel="stylesheet" href="common/UI.css">
     <script src="lib/gl-matrix-min.js"></script>
 </head>
 
 <body>
-    <div class="fullscreen">
-        <canvas></canvas>
-        <div id="main-menu">
-            <h1>BicikeLJ rush</h1>
-            <button onclick="startGame()">Play</button>
-            <button onclick="restartGame()">Restart</button>
-            <button onclick="pauseGame()">Pause</button>
-            <button onclick="resumeGame()">Resume</button>
-            <div>
-                <p id="coinsPicked">Coins Picked: 0</p>
-                <p id="time">Time: 0</p>
-                <p id="gameOverScore"></p>
-            </div>
+    <!-- start screen -->
+    <div id="start-game">
+        <h1>BicikeLJ rush</h1>
+        <button onclick="startGame()">Play</button>
+    </div>
+
+    <!-- game over screen -->
+    <div id="game-over">
+        <h1>GAME OVER</h1>
+        <p id="gameOverCoins">
+            <img src="/common/assets/ui/coin.png" alt="Coin" style="height: 1em; margin-right: 5px;">
+            0
+        </p>
+        <p id="gameOverScore">gameOverScore</p>
+        <button onclick="restartGame()">Restart</button>
+    </div>
+
+    <!-- game -->
+    <div id="game-ui">
+        <button id="togglePauseButton" onclick="togglePause()">
+            <img src="/common/assets/ui/pause.png" alt="Pause">
+        </button>
+        <div>
+            <p id="coinsPicked">
+                <img src="/common/assets/ui/coin.png" alt="Coin" style="height: 1em; margin-right: 5px;">
+                0
+            </p>
+            <p id="time">Time: 0</p>
         </div>
     </div>
+    <div class="fullscreen">
+        <canvas></canvas>
+    </div>
+
     <script type="module">
-        import { startGame, restartGame, pauseGame, resumeGame } from './main.js';
+        import { startGame, restartGame, togglePause } from './main.js';
 
         // Make the functions available globally
         window.startGame = startGame;
         window.restartGame = restartGame;
-        window.pauseGame = pauseGame;
-        window.resumeGame = resumeGame;
+        window.togglePause = togglePause;
     </script>
 </body>
 

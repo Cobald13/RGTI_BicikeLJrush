@@ -1,0 +1,83 @@
+#game-ui h1 {
+    font-size: 2em;
+}
+
+#game-ui {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 10px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 5px;
+    text-align: right;
+    font-family: Arial, sans-serif;
+    color: #000;
+    display: none;
+}
+
+#togglePauseButton {
+    width: 50px;
+    height: 50px;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+#togglePauseButton img {
+    width: 100%;
+    height: 100%;
+}
+
+#start-game {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    /* background-color: #ffffff; */
+    background-image: url("/common/assets/ui/background.png");
+    background-size: cover;
+    background-position: center;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+}
+
+#start-game h1 {
+    font-size: 4em;
+}
+
+#start-game button {
+    padding: 10px 20px;
+    font-size: 1.2em;
+}
+
+
+#game-over {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background-color: rgba(255, 255, 255, 0.5);
+    /* background-image: url("/common/assets/ui/background.png");
+    background-size: cover;
+    background-position: center; */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+    display: none;
+}
+
+#game-over h1 {
+    font-size: 4em;
+}
+
+#game-over button {
+    padding: 10px 20px;
+    font-size: 1.2em;
+}
