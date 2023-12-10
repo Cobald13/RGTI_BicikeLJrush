@@ -31,6 +31,8 @@ import { MiddleStepRotateAnimator } from './common/engine/animators/MiddleStepRo
 
 import { ScoringSystem } from './ScoringSystem.js'
 
+import { playMusic, pauseMusic, crashMusic, coinMusic, audioBike, audioAmbient } from './Sound.js';
+
 const canvas = document.querySelector("canvas");
 
 const renderer = new Renderer(canvas);
@@ -43,7 +45,6 @@ export { score };
 const scene = gltfLoader.loadScene(gltfLoader.defaultScene);
 const camera = scene.find(node => node.getComponentOfType(Camera));
 camera.getComponentOfType(Camera).far = 100;
-
 
 // dobimo vse modele
 const models = scene.filter(node => node.getComponentOfType(Model));
@@ -108,6 +109,10 @@ var updateSystem;
 document.getElementById('main-menu').style.opacity = '0.5';
 export let startTime;
 export function startGame() {
+
+    //predvajamo glasbo
+    playMusic();
+
     score.startGame();
     // document.getElementById('main-menu').style.display = 'none';
     startTime = performance.now();
@@ -133,10 +138,10 @@ export function startGame() {
                 startTime: 0,
                 loop: false,
             }));
-            setTimeout(function () {
-                model.removeComponent(LinearAnimator);
-                scene.removeChild(model);
-            }, 10000);
+            //setTimeout(function () {
+            //    model.removeComponent(LinearAnimator);
+            //    scene.removeChild(model);
+            //}, 10000);
         }
         else {
             model.addComponent(new LinearAnimator(model, {
@@ -209,7 +214,7 @@ export function startGame() {
                     }
                 }
 
-                var threshold = 0.5; // Adjust this value as needed
+                var threshold = 0.5;
 
                 for (var i = 0; i < ovire.length; i++) {
                     if (Math.abs(ovire[i].getComponentOfType(Transform).translation[0] - randomX) < threshold) {
@@ -250,7 +255,6 @@ export function startGame() {
     function continueSpawningObstacles() {
         var randomInterval = 1000 * (Math.floor(Math.random() * 5) + 1);
         spawnObstacle(function () {
-            // Code to be executed after spawnObstacle completes
         });
         setTimeout(continueSpawningObstacles, randomInterval);
     }
@@ -279,28 +283,6 @@ export function startGame() {
                 duration: 1,
                 loop: true,
             }));
-            /*trenutno "bobbing" animacijo prekine LinearAnimator
-            coins[coins.length - 1].addComponent(new MiddleStepAnimator(coins[coins.length - 1], {
-                startPosition: [
-                    coins[coins.length - 1].getComponentOfType(Transform).translation[0],
-                    coins[coins.length - 1].getComponentOfType(Transform).translation[1],
-                    coins[coins.length - 1].getComponentOfType(Transform).translation[2]
-                ],
-                middlePosition: [
-                    coins[coins.length - 1].getComponentOfType(Transform).translation[0],
-                    coins[coins.length - 1].getComponentOfType(Transform).translation[1] + 0.5,
-                    coins[coins.length - 1].getComponentOfType(Transform).translation[2]
-                ],
-                endPosition: [
-                    coins[coins.length - 1].getComponentOfType(Transform).translation[0],
-                    coins[coins.length - 1].getComponentOfType(Transform).translation[1],
-                    coins[coins.length - 1].getComponentOfType(Transform).translation[2]
-                ],
-                startTime: 0,
-                duration: 1,
-                loop: true,
-            }));
-            */
         }
     });
     // console.log(coins[0], coins[0].zacetniXYZ);
@@ -409,16 +391,6 @@ export function startGame() {
         duration: 1,
         loop: true,
     }));
-    //dobimo node kolo in mu dodamo middlesteprotateanimator
-    //console.log(bike.find(node => node.name === "Bike"));
-    //bike.find(node => node.name === "Bike").addComponent(new MiddleStepRotateAnimator(bike.find(node => node.name === "Bike"), {
-    //    startRotation: [0, 0, 0.02, 1],
-    //    middleRotation: [0, 0, -0.02, 1],
-    //    endRotation: [0, 0, 0.02, 1],
-    //    startTime: 0,
-    //    duration: 1,
-    //    loop: true,
-    //}));
     //dobimo node Pedala in mu dodamo middlesteprotateanimator
     //console.log(bike.find(node => node.name === "Pedala"));
     bike.find(node => node.name === "Pedala").addComponent(new MiddleStepRotateAnimator(bike.find(node => node.name === "Pedala"), {
@@ -549,10 +521,14 @@ function resetCoin(coin) {
 
 export function pauseGame() {
     updateSystem.stop();
+    pauseMusic();
 }
+
+
 
 export function resumeGame() {
     updateSystem.start();
+    playMusic();
 }
 
 function gameOver() {
@@ -568,7 +544,6 @@ function gameOver() {
     console.log(`Score: ${finalScore}, Coins: ${score.coinsPicked}`);
     score.reset();
 }
-
 
 // Check if the page was reloaded
 if (localStorage.getItem('reloadFlag')) {
@@ -589,11 +564,14 @@ export function handleCollision(a, b) {
     const collidedObject = a.name === "Bike" ? b : a;
     if (collidedObject.name.includes("Coin")) {
         console.log(collidedObject);
+        coinMusic();
         score.pickCoin();
         updateCoinsPickedDisplay();
         resetCoin(collidedObject);
     } else if (collidedObject.name.includes("Ovira")) {
         console.log("GAME OVER");
+        pauseMusic();
+        crashMusic();
         gameOver();
     }
 }
