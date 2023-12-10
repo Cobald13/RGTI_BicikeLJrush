@@ -96,7 +96,7 @@ var stProstihCoinov = 0;
 const bike = gltfLoader.loadNode("Bike");
 bike.addComponent(new FirstPersonController(bike, document.body, {
     dev: false,
-    maxSpeed: 25,
+    maxSpeed: 5,
 }));
 
 const GAME_SPEED = 10;
