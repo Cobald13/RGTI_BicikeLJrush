@@ -587,6 +587,14 @@ export function restartGame() {
     location.reload();
 }
 
+//colision statičnih objektov
+//preberemo objekte, ki imajo Static v imenu
+models.forEach((model) => {
+    if (model.name.includes("Static")) {
+        gltfLoader.loadNode(model.name).isStatic = true;
+    }
+});
+
 export function handleCollision(a, b) {
     const collidedObject = a.name === "Bike" ? b : a;
     if (collidedObject.name.includes("Coin")) {
@@ -595,7 +603,7 @@ export function handleCollision(a, b) {
         score.pickCoin();
         updateCoinsPickedDisplay();
         resetCoin(collidedObject);
-    } else if (collidedObject.name.includes("Ovira")) {
+    } else if (collidedObject.name.includes("Ovira") || collidedObject.name.includes("Static")) {
         console.log("GAME OVER");
         pauseMusic();
         crashMusic();
